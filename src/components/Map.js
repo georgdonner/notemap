@@ -20,14 +20,14 @@ const Map = () => {
         useEffect(() => {
             map.addControl(searchControl);
             return () => map.removeControl(searchControl);
-        }, []);
+        });
 
         return null;
     };
 
     const Markers = () => {
 
-        const map = useMapEvents({
+        useMapEvents({
             click(e) {
                 setNewMarker(e);
             },
