@@ -31,10 +31,16 @@ function App() {
 function MainRouter() {
   const user = useUser();
   const isAuthenticated = Boolean(user?.data);
-  console.log(isAuthenticated, user?.status);
 
-  return user?.status === "loading" ? (
-    <div>Lädt...</div>
+  return user?.status === "loading" || !user?.hasEmitted ? (
+    <div
+      className="d-flex justify-content-center align-items-center"
+      style={{ height: "100vh" }}
+    >
+      <div className="spinner-border" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+    </div>
   ) : (
     <Router>
       <div className="App">
