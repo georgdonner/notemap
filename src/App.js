@@ -1,6 +1,6 @@
 import { FirebaseAppProvider } from "reactfire";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
-import { useUser } from "reactfire";
+import { useSigninCheck } from "reactfire";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
@@ -29,10 +29,10 @@ function App() {
 }
 
 function MainRouter() {
-  const user = useUser();
-  const isAuthenticated = Boolean(user?.data);
+  const { status, data: signInCheckResult } = useSigninCheck();
+  const isAuthenticated = signInCheckResult?.signedIn;
 
-  return user?.status === "loading" || !user?.hasEmitted ? (
+  return status === "loading" ? (
     <div
       className="d-flex justify-content-center align-items-center"
       style={{ height: "100vh" }}
