@@ -1,75 +1,110 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import '../App.css'
 import {MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents} from 'react-leaflet'
 import {GeoSearchControl, OpenStreetMapProvider} from 'leaflet-geosearch';
+import 'leaflet-geosearch/dist/geosearch.css';
 
-const Map = () => {
+const SearchField = () => {
 
-    let popMarker = true;
+    const map = useMap();
 
-    const [markers, setMarkers] = useState([]);
-    const [creationFinished, setCreationFinished] = useState(true);
-
-    const SearchField = () => {
+    useEffect(() => {
         const provider = new OpenStreetMapProvider();
 
         const searchControl = new GeoSearchControl({
             provider: provider,
         });
 
-        const map = useMap();
-        useEffect(() => {
-            map.addControl(searchControl);
-            return () => map.removeControl(searchControl);
-        });
+        map.addControl(searchControl);
+        return () => map.removeControl(searchControl);
+    }, [map]);
 
-        return null;
-    };
+    return null;
+};
+
+const MyMarker = (props) => {
+    const leafletRef = useRef();
+    useEffect(() => {
+        leafletRef.current.openPopup();
+    }, []);
+    return <Marker ref={leafletRef} {...props} />
+};
+
+const Map = () => {
+
+    const refContainer = useRef([]);
+
+    const [markers, setMarkers] = useState([]);
+    const [newMarker, setNewMarker] = useState();
+    const [currentPopupContent, setCurrentPopupContent] = useState({
+        name: "",
+        description: "",
+        category: ""
+    });
 
     function MyComponent() {
         useMapEvents({
             click: (e) => {
-                if (creationFinished) {
-                    setNewMarker(e);
-                    setCreationFinished(false);
-                } else {
-                    alert("Bitte beenden Sie zuerst die Erstellung des aktuellen Markers");
-                }
+                setNewMarker({
+                    id: markers.length,
+                    lat: e.latlng.lat,
+                    lng: e.latlng.lng,
+                    name: currentPopupContent.name,
+                    description: currentPopupContent.description,
+                    category: currentPopupContent.category
+                })
             },
             popupclose: (e) => {
-                handleCloseButton(e);
+                console.log("popup closed");
             },
         });
 
         return null
     }
 
-    function setNewMarker(e) {
+    function handleSaveButton() {
         setMarkers([...markers, {
-            id: markers.length,
-            lat: e.latlng.lat,
-            lng: e.latlng.lng,
-            description: "description",
-            name: "name",
-            category: "category"
+            id: newMarker.id,
+            lat: newMarker.lat,
+            lng: newMarker.lng,
+            name: currentPopupContent.name,
+            description: currentPopupContent.description,
+            category: currentPopupContent.category
         }]);
-       // console.log(e.originalEvent.path[4]);
-       // e.originalEvent.path[4].children[1].children[0].children[0].children[0].children[5].click();
+
+        setNewMarker(null);
+
+        setCurrentPopupContent({
+            name: "",
+            description: "",
+            category: ""
+        });
     }
 
-    function popMarkers() {
-        setMarkers(markers.filter(marker => marker.id !== markers.length - 1));
+    function test() {
+        console.log(markers);
     }
 
-    function handleCloseButton(e) {
-        if (popMarker) popMarkers();
-        setCreationFinished(true);
-        popMarker = true;
-    }
-
-    function handleSaveButton(e) {
-        popMarker = false;
-        e.nativeEvent.path[4].children[2].click();
+    function handlePopupContentChange(e) {
+        if (e.target.name === "name") {
+            setCurrentPopupContent({
+                name: e.target.value,
+                description: currentPopupContent.description,
+                category: currentPopupContent.category
+            })
+        } else if (e.target.name === "description") {
+            setCurrentPopupContent({
+                name: currentPopupContent.name,
+                description: e.target.value,
+                category: currentPopupContent.category
+            })
+        } else if (e.target.name === "category") {
+            setCurrentPopupContent({
+                name: currentPopupContent.name,
+                description: currentPopupContent.description,
+                category: e.target.value
+            })
+        }
     }
 
     return (
@@ -81,41 +116,59 @@ const Map = () => {
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+                {newMarker ? <MyMarker position={[newMarker.lat, newMarker.lng]}>
+                    <Popup onClose={() => setNewMarker(null)} closeOnClick={false}>
+                        <div style={{marginBottom: "3px"}}>
+                            <label>
+                                Name: <br/>
+                                <input style={{marginLeft: "3px"}} type="text" name="name"
+                                       value={currentPopupContent.name}
+                                       onChange={handlePopupContentChange}/>
+                            </label><br/>
+                        </div>
+                        <div style={{marginBottom: "3px"}}>
+                            <label>
+                                Beschreibung: <br/>
+                                <input style={{marginLeft: "3px"}} type="text" name="description"
+                                       value={currentPopupContent.description}
+                                       onChange={handlePopupContentChange}/>
+                            </label><br/></div>
+                        <div style={{marginBottom: "3px"}}>
+                            <label>
+                                Kategorie: <br/>
+                                <input style={{marginLeft: "3px"}} type="text" name="category"
+                                       value={currentPopupContent.category}
+                                       onChange={handlePopupContentChange}/>
+                            </label><br/>
+                        </div>
+                        <div style={{marginLeft: "3px"}}>
+                            <button onClick={handleSaveButton}> Speichern</button>
+                        </div>
+                    </Popup>
+                </MyMarker> : null}
                 {markers.map((marker) =>
                     <Marker key={marker.id} position={[marker.lat, marker.lng]}>
-                        {creationFinished ?
-                            <div></div> :
-                            <div className="newMarkerPopup">
-                                <Popup id={marker.id} closeButton={true} closeOnClick={false}>
-                                    <div style={{marginBottom: "3px"}}>
-                                        <label>
-                                            Name: <br/>
-                                            <input style={{marginLeft: "3px"}} type="text" name="name"/>
-                                        </label><br/>
-                                    </div>
-                                    <div style={{marginBottom: "3px"}}>
-                                        <label>
-                                            Beschreibung: <br/>
-                                            <input style={{marginLeft: "3px"}} type="text" name="description"/>
-                                        </label><br/></div>
-                                    <div style={{marginBottom: "3px"}}>
-                                        <label>
-                                            Kategorie: <br/>
-                                            <input style={{marginLeft: "3px"}} type="text" name="categorie"/>
-                                        </label><br/>
-                                    </div>
-                                    <div style={{marginLeft: "3px"}}>
-                                        <button onClick={handleSaveButton}> Speichern</button>
-                                    </div>
-                                </Popup>
-                            </div>}
-
+                        <Popup closeOnClick={false}>
+                            <div style={{marginBottom: "3px"}}>
+                                <label>
+                                    <b>{marker.name}</b>
+                                </label><br/>
+                            </div>
+                            <div style={{marginBottom: "3px"}}>
+                                <label>
+                                    {marker.description}
+                                </label><br/>
+                            </div>
+                            <div style={{marginBottom: "3px"}}>
+                                <label>
+                                    {marker.category}
+                                </label><br/>
+                            </div>
+                        </Popup>
                     </Marker>
                 )}
             </MapContainer>
-            {markers.map((marker) =>
-                <li key={marker.id}>{marker.lat} {marker.lng}</li>
-            )}
+            <button onClick={test}> Test</button>
         </div>
     )
 };
