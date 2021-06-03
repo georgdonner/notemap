@@ -58,7 +58,7 @@ const Map = () => {
   });
   const [editMode, setEditMode] = useState(false);
 
-  function MyComponent() {
+  function MapEvents() {
     useMapEvents({
       click: (e) => {
         setNewMarker({
@@ -110,25 +110,10 @@ const Map = () => {
   }
 
   function handlePopupContentChange(e) {
-    if (e.target.name === "name") {
-      setCurrentPopupContent({
-        name: e.target.value,
-        description: currentPopupContent.description,
-        category: currentPopupContent.category,
-      });
-    } else if (e.target.name === "description") {
-      setCurrentPopupContent({
-        name: currentPopupContent.name,
-        description: e.target.value,
-        category: currentPopupContent.category,
-      });
-    } else if (e.target.name === "category") {
-      setCurrentPopupContent({
-        name: currentPopupContent.name,
-        description: currentPopupContent.description,
-        category: e.target.value,
-      });
-    }
+    setCurrentPopupContent({
+      ...currentPopupContent,
+      [e.target.name]: e.target.value,
+    });
   }
 
   function handleEditButton(marker) {
@@ -159,7 +144,7 @@ const Map = () => {
       category: currentPopupContent.category,
     };
 
-    setMarkers([...newMakerArray]);
+    setMarkers(newMakerArray);
 
     setCurrentPopupContent({
       name: "",
@@ -174,7 +159,7 @@ const Map = () => {
     <div>
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />
-        <MyComponent />
+        <MapEvents />
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
