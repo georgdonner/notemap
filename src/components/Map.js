@@ -3,6 +3,7 @@ import '../App.css'
 import {MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents} from 'react-leaflet'
 import {GeoSearchControl, OpenStreetMapProvider} from 'leaflet-geosearch';
 import 'leaflet-geosearch/dist/geosearch.css';
+import { FaTrashAlt, FaEdit } from 'react-icons/fa';
 
 const SearchField = () => {
 
@@ -162,7 +163,7 @@ const Map = () => {
                             <div style={{marginBottom: "3px"}}>
                                 <label>
                                     {marker.category}
-                                </label><br/>
+                                </label><br/><FaEdit /><FaTrashAlt />
                             </div>
                         </Popup>
                     </Marker>
