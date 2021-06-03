@@ -3,7 +3,7 @@ import '../App.css'
 import {MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents} from 'react-leaflet'
 import {GeoSearchControl, OpenStreetMapProvider} from 'leaflet-geosearch';
 import 'leaflet-geosearch/dist/geosearch.css';
-import { FaTrashAlt, FaEdit } from 'react-icons/fa';
+import {FaTrashAlt, FaEdit, FaSave} from 'react-icons/fa';
 
 const SearchField = () => {
 
@@ -35,13 +35,21 @@ const Map = () => {
 
     const refContainer = useRef([]);
 
-    const [markers, setMarkers] = useState([]);
+    const [markers, setMarkers] = useState([{
+        id: 0,
+        lat: 51.505,
+        lng: -0.09,
+        name: "Restaurant",
+        description: "Tolles Restaurant mit gutem Essen!",
+        category: "Restaurant, Asiatisch"
+    }]);
     const [newMarker, setNewMarker] = useState();
     const [currentPopupContent, setCurrentPopupContent] = useState({
         name: "",
         description: "",
         category: ""
     });
+    const [editMode, setEditMode] = useState(false);
 
     function MyComponent() {
         useMapEvents({
@@ -56,7 +64,12 @@ const Map = () => {
                 })
             },
             popupclose: (e) => {
-                console.log("popup closed");
+                setEditMode(false);
+                setCurrentPopupContent({
+                    name: "",
+                    description: "",
+                    category: ""
+                });
             },
         });
 
@@ -83,7 +96,7 @@ const Map = () => {
     }
 
     function test() {
-        console.log(markers);
+        console.log("test");
     }
 
     function handlePopupContentChange(e) {
@@ -108,6 +121,43 @@ const Map = () => {
         }
     }
 
+    function handleEditButton(marker) {
+        setCurrentPopupContent({
+            name: marker.name,
+            description: marker.description,
+            category: marker.category
+        });
+        setEditMode(!editMode);
+    }
+
+    function handleDeleteButton(id) {
+        setMarkers(markers.filter(marker => {
+            return marker.id !== id;
+        }))
+    }
+
+    function handleEditSaveButton(id) {
+        let newMakerArray = [...markers];
+        newMakerArray[id] = {
+            id: newMakerArray[id].id,
+            lat: newMakerArray[id].lat,
+            lng: newMakerArray[id].lng,
+            name: currentPopupContent.name,
+            description: currentPopupContent.description,
+            category: currentPopupContent.category
+        };
+
+        setMarkers([...newMakerArray]);
+
+        setCurrentPopupContent({
+            name: "",
+            description: "",
+            category: ""
+        });
+
+        setEditMode(false);
+    }
+
     return (
         <div>
             <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false}>
@@ -124,7 +174,7 @@ const Map = () => {
                                 Name: <br/>
                                 <input style={{marginLeft: "3px"}} type="text" name="name"
                                        value={currentPopupContent.name}
-                                       onChange={handlePopupContentChange}/>
+                                       onChange={(e) => { handlePopupContentChange(e) }}/>
                             </label><br/>
                         </div>
                         <div style={{marginBottom: "3px"}}>
@@ -132,39 +182,58 @@ const Map = () => {
                                 Beschreibung: <br/>
                                 <input style={{marginLeft: "3px"}} type="text" name="description"
                                        value={currentPopupContent.description}
-                                       onChange={handlePopupContentChange}/>
+                                       onChange={(e) => { handlePopupContentChange(e) }}/>
                             </label><br/></div>
                         <div style={{marginBottom: "3px"}}>
                             <label>
                                 Kategorie: <br/>
                                 <input style={{marginLeft: "3px"}} type="text" name="category"
                                        value={currentPopupContent.category}
-                                       onChange={handlePopupContentChange}/>
+                                       onChange={(e) => { handlePopupContentChange(e) }}/>
                             </label><br/>
                         </div>
                         <div style={{marginLeft: "3px"}}>
-                            <button onClick={handleSaveButton}> Speichern</button>
+                            <button onClick={() => { handleSaveButton() }}> Speichern</button>
                         </div>
                     </Popup>
                 </MyMarker> : null}
                 {markers.map((marker) =>
                     <Marker key={marker.id} position={[marker.lat, marker.lng]}>
                         <Popup closeOnClick={false}>
-                            <div style={{marginBottom: "3px"}}>
-                                <label>
-                                    <b>{marker.name}</b>
-                                </label><br/>
-                            </div>
-                            <div style={{marginBottom: "3px"}}>
-                                <label>
-                                    {marker.description}
-                                </label><br/>
-                            </div>
-                            <div style={{marginBottom: "3px"}}>
-                                <label>
-                                    {marker.category}
-                                </label><br/><FaEdit /><FaTrashAlt />
-                            </div>
+                            {!editMode ? <div>
+                                <div style={{marginBottom: "3px"}}>
+                                    <label>
+                                        <b>{marker.name}</b>
+                                    </label><br/>
+                                </div>
+                                <div style={{marginBottom: "3px"}}>
+                                    <label>
+                                        {marker.description}
+                                    </label><br/>
+                                </div>
+                                <div style={{marginBottom: "3px"}}>
+                                    <label>
+                                        {marker.category}
+                                    </label><br/>
+                                    <div className="buttonArea">
+                                        <FaEdit style={{cursor: "pointer"}}
+                                                onClick={() => { handleEditButton(marker) }}/><FaTrashAlt
+                                        style={{cursor: "pointer"}} onClick={() => { handleDeleteButton(marker.id) }}/>
+                                    </div>
+                                </div>
+                            </div> : <div>
+                                <input style={{marginLeft: "3px"}} type="text" name="name"
+                                       value={currentPopupContent.name}
+                                       onChange={(e) => { handlePopupContentChange(e) }}/><br/>
+                                <input style={{marginLeft: "3px"}} type="text" name="description"
+                                       value={currentPopupContent.description}
+                                       onChange={(e) => { handlePopupContentChange(e) }}/><br/>
+                                <input style={{marginLeft: "3px"}} type="text" name="category"
+                                       value={currentPopupContent.category}
+                                       onChange={(e) => { handlePopupContentChange(e) }}/><br/>
+                                <FaSave style={{cursor: "pointer"}}
+                                        onClick={() => { handleEditSaveButton(marker.id) }}/>
+                            </div>}
                         </Popup>
                     </Marker>
                 )}
