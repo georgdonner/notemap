@@ -11,6 +11,13 @@ import {
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { FaTrashAlt, FaEdit, FaSave } from "react-icons/fa";
+import "firebase/firestore";
+import {
+  useFirestoreDocData,
+  useFirestore,
+  useFirebaseApp,
+  useFirestoreCollectionData,
+} from "reactfire";
 
 const SearchField = () => {
   const map = useMap();
@@ -38,18 +45,18 @@ const MyMarker = (props) => {
 };
 
 const Map = () => {
-  const refContainer = useRef([]);
+  const markersRef = useFirestore().collection("marker");
 
-  const [markers, setMarkers] = useState([
-    {
-      id: 0,
-      lat: 51.505,
-      lng: -0.09,
-      name: "Restaurant",
-      description: "Tolles Restaurant mit gutem Essen!",
-      category: "Restaurant, Asiatisch",
-    },
-  ]);
+  const { status, data } = useFirestoreCollectionData(markersRef);
+
+  const markers = (data || []).map((marker) => {
+    return { ...marker, id: marker.NO_ID_FIELD };
+  });
+
+  if (status === "loading") {
+    console.log("Daten werden geladen!");
+  }
+
   const [newMarker, setNewMarker] = useState();
   const [currentPopupContent, setCurrentPopupContent] = useState({
     name: "",
@@ -84,17 +91,20 @@ const Map = () => {
   }
 
   function handleSaveButton() {
-    setMarkers([
-      ...markers,
-      {
-        id: newMarker.id,
-        lat: newMarker.lat,
-        lng: newMarker.lng,
+    markersRef
+      .add({
+        position: [newMarker.lat, newMarker.lng],
         name: currentPopupContent.name,
         description: currentPopupContent.description,
         category: currentPopupContent.category,
-      },
-    ]);
+        map: "xWW0J3cU3KpdP3vEarom", // Change later to actual map
+      })
+      .then((result) => {
+        console.log("Marker added");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     setNewMarker(null);
 
@@ -103,10 +113,6 @@ const Map = () => {
       description: "",
       category: "",
     });
-  }
-
-  function test() {
-    console.log("test");
   }
 
   function handlePopupContentChange(e) {
@@ -126,25 +132,31 @@ const Map = () => {
   }
 
   function handleDeleteButton(id) {
-    setMarkers(
-      markers.filter((marker) => {
-        return marker.id !== id;
+    markersRef
+      .doc(id)
+      .delete()
+      .then((result) => {
+        console.log("Marker deleted");
       })
-    );
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   function handleEditSaveButton(id) {
-    let newMakerArray = [...markers];
-    newMakerArray[id] = {
-      id: newMakerArray[id].id,
-      lat: newMakerArray[id].lat,
-      lng: newMakerArray[id].lng,
-      name: currentPopupContent.name,
-      description: currentPopupContent.description,
-      category: currentPopupContent.category,
-    };
-
-    setMarkers(newMakerArray);
+    markersRef
+      .doc(id)
+      .update({
+        name: currentPopupContent.name,
+        description: currentPopupContent.description,
+        category: currentPopupContent.category,
+      })
+      .then((result) => {
+        console.log("Marker edited");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
     setCurrentPopupContent({
       name: "",
@@ -225,8 +237,8 @@ const Map = () => {
             </Popup>
           </MyMarker>
         ) : null}
-        {markers.map((marker) => (
-          <Marker key={marker.id} position={[marker.lat, marker.lng]}>
+        {markers?.map((marker) => (
+          <Marker key={marker.id} position={marker.position}>
             <Popup closeOnClick={false}>
               {!editMode ? (
                 <div>
@@ -303,7 +315,6 @@ const Map = () => {
           </Marker>
         ))}
       </MapContainer>
-      <button onClick={test}> Test</button>
     </div>
   );
 };
