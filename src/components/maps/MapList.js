@@ -8,7 +8,33 @@ const lightenColor = (hex) => {
   return tinycolor(hsl).toHexString();
 };
 
-const MapCard = ({ map }) => (
+const SharedWith = ({ members }) => {
+  const memberNames = Object.values(members).map((member) => member.name);
+  if (!memberNames.length) {
+    return null;
+  }
+
+  if (memberNames.length > 3) {
+    return (
+      <p className="fs-5 mt-3 mb-0">
+        Geteilt mit {memberNames.length} Freund:innen
+      </p>
+    );
+  }
+
+  let membersString = "";
+  if (memberNames.length > 2) {
+    membersString = `${memberNames.slice(0, -1).join(", ")} und ${
+      memberNames[memberNames.length - 1]
+    }`;
+  } else {
+    membersString = memberNames.join(" und ");
+  }
+
+  return <p className="fs-5 mt-3 mb-0">Geteilt mit {membersString}</p>;
+};
+
+const MapCard = ({ map, owned }) => (
   <div key={map.id} className="col-md-6">
     <div
       className="card p-4"
@@ -29,6 +55,10 @@ const MapCard = ({ map }) => (
       <p className="fs-5 mt-3 mb-0">
         {map.markerCount || 0} Markierung{map.markerCount !== 1 ? "en" : ""}
       </p>
+      {owned && map.members ? <SharedWith members={map.members} /> : null}
+      {!owned ? (
+        <p className="fs-5 mt-3 mb-0">Geteilte Karte von {map.owner.name}</p>
+      ) : null}
     </div>
   </div>
 );
@@ -37,18 +67,18 @@ const MapList = () => {
   const firestore = useFirestore();
   const { data: user } = useUser();
 
-  const mapCollection = firestore.collection("map");
+  const mapCollection = firestore.collection("maps");
 
-  const ownedQuery = mapCollection.where("owner", "==", user.uid);
+  const ownedQuery = mapCollection.where("owner.id", "==", user.uid);
   const { data: ownedMaps } = useFirestoreCollectionData(ownedQuery, {
     idField: "id",
     initialData: [],
   });
 
   const sharedQuery = mapCollection.where(
-    "members",
-    "array-contains",
-    user.uid
+    `members.${user.uid}.name`,
+    ">",
+    "''"
   );
   const { data: sharedMaps } = useFirestoreCollectionData(sharedQuery, {
     idField: "id",
@@ -90,7 +120,7 @@ const MapList = () => {
         </div>
 
         {allMaps.map((map) => (
-          <MapCard key={map.id} map={map} />
+          <MapCard key={map.id} map={map} owned={map.owner.id === user.uid} />
         ))}
       </div>
     </div>
