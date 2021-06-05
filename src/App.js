@@ -4,6 +4,7 @@ import { useSigninCheck } from "reactfire";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
+import MapList from "./components/maps/MapList";
 import Map from "./components/Map";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
@@ -51,8 +52,11 @@ function MainRouter() {
           <PublicRoute path="/signup" isAuthenticated={isAuthenticated}>
             <SignupForm />
           </PublicRoute>
-          <PrivateRoute path="/" isAuthenticated={isAuthenticated}>
+          <PrivateRoute path="/main-map" isAuthenticated={isAuthenticated}>
             <Map />
+          </PrivateRoute>
+          <PrivateRoute path="/" isAuthenticated={isAuthenticated}>
+            <MapList />
           </PrivateRoute>
         </Switch>
       </div>
