@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useAuth, useFirestore } from "reactfire";
+import { useAuth, useFunctions } from "reactfire";
 import { Link } from "react-router-dom";
+import "firebase/functions";
 
 const SignupForm = () => {
   const auth = useAuth();
-  const firestore = useFirestore();
+  const functions = useFunctions();
 
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -13,17 +14,9 @@ const SignupForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { user } = await auth.createUserWithEmailAndPassword(email, password);
+    await auth.createUserWithEmailAndPassword(email, password);
 
-    // Add user to firestore database for querying
-    const userCollection = firestore.collection("users");
-    userCollection.doc(user.uid).set({
-      name: displayName,
-      email: user.email,
-    });
-
-    // Update user in auth database as well
-    user.updateProfile({
+    await functions.httpsCallable("addUserDisplayName")({
       displayName,
     });
   };
