@@ -1,11 +1,18 @@
 import { useFirestoreCollectionData, useFirestore, useUser } from "reactfire";
 import { Link } from "react-router-dom";
 import tinycolor from "tinycolor2";
+import styled from "styled-components";
 
-const lightenColor = (hex) => {
+const lightenColor = (hex, amount = 0.99) => {
   const hsl = tinycolor(hex).toHsl();
-  hsl.l = 0.99;
+  hsl.l = amount;
   return tinycolor(hsl).toHexString();
+};
+
+const cardBackground = (hex) => {
+  const bgColor = lightenColor(hex);
+  const stripesColor = lightenColor(hex, 0.975);
+  return `repeating-linear-gradient(-45deg, ${bgColor}, ${bgColor} 20px, ${stripesColor} 20px, ${stripesColor} 25px)`;
 };
 
 const SharedWith = ({ members }) => {
@@ -34,15 +41,17 @@ const SharedWith = ({ members }) => {
   return <p className="fs-5 mt-3 mb-0">Geteilt mit {membersString}</p>;
 };
 
+const MapCardWrapper = styled.div`
+  border-color: ${(props) => props.color};
+  background-color: ${(props) => lightenColor(props.color)};
+  &:hover {
+    background-image: ${(props) => cardBackground(props.color)};
+  }
+`;
+
 const MapCard = ({ map, owned }) => (
   <div key={map.id} className="col-md-6">
-    <div
-      className="card p-4"
-      style={{
-        borderColor: map.color,
-        backgroundColor: lightenColor(map.color),
-      }}
-    >
+    <MapCardWrapper color={map.color} className="card p-4">
       <Link
         to={`/map/${map.id}`}
         className="h3 stretched-link text-reset text-decoration-none"
@@ -59,7 +68,7 @@ const MapCard = ({ map, owned }) => (
       {!owned ? (
         <p className="fs-5 mt-3 mb-0">Geteilte Karte von {map.owner.name}</p>
       ) : null}
-    </div>
+    </MapCardWrapper>
   </div>
 );
 
@@ -103,13 +112,7 @@ const MapList = () => {
       </div>
       <div className="row g-4">
         <div className="col-12">
-          <div
-            className="card p-4"
-            style={{
-              borderColor: "#000",
-              backgroundColor: lightenColor("#000"),
-            }}
-          >
+          <MapCardWrapper color="#000" className="card p-4">
             <Link
               to="/main-map"
               className="h3 stretched-link text-reset text-decoration-none"
@@ -125,7 +128,7 @@ const MapList = () => {
               {allMaps.length} Karte
               {allMaps.length !== 1 ? "n" : ""}
             </p>
-          </div>
+          </MapCardWrapper>
         </div>
 
         {allMaps.map((map) => (
