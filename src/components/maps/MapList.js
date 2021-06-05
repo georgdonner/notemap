@@ -44,7 +44,7 @@ const MapCard = ({ map, owned }) => (
       }}
     >
       <Link
-        to={`map/${map.id}`}
+        to={`/map/${map.id}`}
         className="h3 stretched-link text-reset text-decoration-none"
       >
         {map.name}
@@ -91,7 +91,16 @@ const MapList = () => {
 
   return (
     <div className="container p-4" style={{ maxWidth: "1000px" }}>
-      <h1 className="mt-4 mb-5">Meine Karten</h1>
+      <div className="d-flex justify-content-between">
+        <h1 className="mt-4 mb-5">Meine Karten</h1>
+        <Link
+          to="/new-map"
+          className="btn btn-primary"
+          style={{ margin: "auto 0" }}
+        >
+          + Neue Karte
+        </Link>
+      </div>
       <div className="row g-4">
         <div className="col-12">
           <div
