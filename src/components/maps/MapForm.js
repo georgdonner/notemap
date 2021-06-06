@@ -86,7 +86,7 @@ const MapForm = () => {
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">Color</label>
+          <label className="form-label">Farbe</label>
           <CirclePicker
             color={map.color}
             onChangeComplete={(color) => setMap({ ...map, color: color.hex })}

@@ -100,8 +100,8 @@ const MapList = () => {
 
   return (
     <div className="container p-4" style={{ maxWidth: "1000px" }}>
-      <div className="d-flex justify-content-between">
-        <h1 className="mt-4 mb-5">Meine Karten</h1>
+      <div className="mb-5 mt-4 d-flex justify-content-between">
+        <h1>Meine Karten</h1>
         <Link
           to="/new-map"
           className="btn btn-primary"
