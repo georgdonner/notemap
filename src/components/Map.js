@@ -139,7 +139,7 @@ const Map = () => {
       description: marker.description,
       category: marker.category,
       tag: "",
-      tags: [],
+      tags: marker.tags,
     });
     setEditMode(!editMode);
   }
@@ -163,6 +163,7 @@ const Map = () => {
         name: currentPopupContent.name,
         description: currentPopupContent.description,
         category: currentPopupContent.category,
+        tags: currentPopupContent.tags,
       })
       .then((result) => {
         console.log("Marker edited");
@@ -190,8 +191,15 @@ const Map = () => {
     });
   }
 
+  function deleteTag(index) {
+    setCurrentPopupContent({
+      ...currentPopupContent,
+      tags: currentPopupContent.tags.filter((tag, i) => i !== index),
+    });
+  }
+
   function testFunction(e) {
-    console.log(currentPopupContent);
+    console.log(currentPopupContent.tags);
   }
 
   return (
@@ -260,7 +268,13 @@ const Map = () => {
                 </label>
                 <br />
               </div>
-              <div style={{ marginBottom: "3px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  marginBottom: "3px",
+                }}
+              >
                 <label>Tags:</label>
                 <input
                   style={{ marginLeft: "3px" }}
@@ -272,14 +286,26 @@ const Map = () => {
                   }}
                 />
                 <div
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", marginLeft: "5px" }}
                   onClick={(e) => addTagsToList(e)}
                 >
                   +
                 </div>
               </div>
               {currentPopupContent.tags.map((tag, index) => (
-                <div key={index}>{tag}</div>
+                <div key={index}>
+                  <div style={{ display: "flex", flexDirection: "row" }}>
+                    <div>{tag}</div>{" "}
+                    <div
+                      style={{ marginLeft: "5px", cursor: "pointer" }}
+                      onClick={() => {
+                        deleteTag(index);
+                      }}
+                    >
+                      x
+                    </div>
+                  </div>
+                </div>
               ))}
               <div style={{ marginLeft: "3px" }}>
                 <button
@@ -317,8 +343,8 @@ const Map = () => {
                     <br />
                   </div>
                   <div style={{ marginBottom: "3px" }}>
-                    {marker.tags.map((tag) => (
-                      <div>{tag}</div>
+                    {marker.tags.map((tag, index) => (
+                      <div key={index}>{tag}</div>
                     ))}
                     <br />
                   </div>
@@ -338,6 +364,7 @@ const Map = () => {
                   </div>
                 </div>
               ) : (
+                //edit mode starts here
                 <div>
                   <input
                     style={{ marginLeft: "3px" }}
@@ -359,16 +386,43 @@ const Map = () => {
                     }}
                   />
                   <br />
-                  <input
-                    style={{ marginLeft: "3px" }}
-                    type="text"
+                  <select
+                    className="form-select"
+                    aria-label="Default select example"
+                    defaultValue={categories.indexOf(
+                      currentPopupContent.category
+                    )}
                     name="category"
-                    value={currentPopupContent.category}
                     onChange={(e) => {
                       handlePopupContentChange(e);
                     }}
-                  />
-                  <br />
+                  >
+                    {categories.map((category, index) => (
+                      <option key={index} value={index}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  {currentPopupContent.tags.map((tag, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        marginBottom: "3px",
+                      }}
+                    >
+                      <div>{tag}</div>
+                      <div
+                        style={{ marginLeft: "5px", cursor: "pointer" }}
+                        onClick={() => {
+                          deleteTag(index);
+                        }}
+                      >
+                        x
+                      </div>
+                    </div>
+                  ))}
                   <FaSave
                     style={{ cursor: "pointer" }}
                     onClick={() => {
