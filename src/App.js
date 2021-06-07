@@ -52,7 +52,7 @@ function MainRouter() {
             <SignupForm />
           </PublicRoute>
           <PrivateRoute path="/" isAuthenticated={isAuthenticated}>
-            <Map />
+            <Map mapID="xWW0J3cU3KpdP3vEarom" />
           </PrivateRoute>
         </Switch>
       </div>

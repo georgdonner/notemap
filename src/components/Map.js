@@ -41,7 +41,7 @@ const MyMarker = (props) => {
   return <Marker ref={leafletRef} {...props} />;
 };
 
-const Map = () => {
+const Map = (props) => {
   const markersRef = useFirestore().collection("marker");
 
   const { status, data } = useFirestoreCollectionData(markersRef);
@@ -98,7 +98,7 @@ const Map = () => {
         name: currentPopupContent.name,
         description: currentPopupContent.description,
         category: currentPopupContent.category,
-        map: "xWW0J3cU3KpdP3vEarom", // Change later to actual map
+        map: props.mapID,
         tags: currentPopupContent.tags,
       })
       .then((result) => {
@@ -403,6 +403,30 @@ const Map = () => {
                       </option>
                     ))}
                   </select>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      marginBottom: "3px",
+                    }}
+                  >
+                    <label>Tags:</label>
+                    <input
+                      style={{ marginLeft: "3px" }}
+                      type="text"
+                      name="tag"
+                      value={currentPopupContent.tag}
+                      onChange={(e) => {
+                        handlePopupContentChange(e);
+                      }}
+                    />
+                    <div
+                      style={{ cursor: "pointer", marginLeft: "5px" }}
+                      onClick={(e) => addTagsToList(e)}
+                    >
+                      +
+                    </div>
+                  </div>
                   {currentPopupContent.tags.map((tag, index) => (
                     <div
                       key={index}
