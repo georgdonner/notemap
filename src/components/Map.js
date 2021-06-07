@@ -120,17 +120,10 @@ const Map = (props) => {
   }
 
   function handlePopupContentChange(e) {
-    if (e.target.name === "category") {
-      setCurrentPopupContent({
-        ...currentPopupContent,
-        [e.target.name]: categories[e.target.value - 1],
-      });
-    } else {
-      setCurrentPopupContent({
-        ...currentPopupContent,
-        [e.target.name]: e.target.value,
-      });
-    }
+    setCurrentPopupContent({
+      ...currentPopupContent,
+      [e.target.name]: e.target.value,
+    });
   }
 
   function handleEditButton(marker) {
@@ -222,9 +215,7 @@ const Map = (props) => {
                     type="text"
                     name="name"
                     value={currentPopupContent.name}
-                    onChange={(e) => {
-                      handlePopupContentChange(e);
-                    }}
+                    onChange={handlePopupContentChange}
                   />
                 </label>
                 <br />
@@ -237,9 +228,7 @@ const Map = (props) => {
                     type="text"
                     name="description"
                     value={currentPopupContent.description}
-                    onChange={(e) => {
-                      handlePopupContentChange(e);
-                    }}
+                    onChange={handlePopupContentChange}
                   />
                 </label>
                 <br />
@@ -249,19 +238,15 @@ const Map = (props) => {
                   Kategorie: <br />
                   <select
                     className="form-select"
-                    aria-label="Default select example"
-                    defaultValue="0"
+                    aria-label="Kategorie auswählen"
                     name="category"
-                    onChange={(e) => {
-                      handlePopupContentChange(e);
-                    }}
+                    value={currentPopupContent.category}
+                    onChange={handlePopupContentChange}
                   >
-                    <option key={0} value={0}>
-                      Wähle eine Kategorie
-                    </option>
-                    {categories.map((category, index) => (
-                      <option key={index + 1} value={index + 1}>
-                        {category}
+                    <option value="">Wähle eine Kategorie</option>
+                    {categories.map((category) => (
+                      <option key={category.key} value={category.key}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
@@ -281,9 +266,7 @@ const Map = (props) => {
                   type="text"
                   name="tag"
                   value={currentPopupContent.tag}
-                  onChange={(e) => {
-                    handlePopupContentChange(e);
-                  }}
+                  onChange={handlePopupContentChange}
                 />
                 <div
                   style={{ cursor: "pointer", marginLeft: "5px" }}
@@ -371,9 +354,7 @@ const Map = (props) => {
                     type="text"
                     name="name"
                     value={currentPopupContent.name}
-                    onChange={(e) => {
-                      handlePopupContentChange(e);
-                    }}
+                    onChange={handlePopupContentChange}
                   />
                   <br />
                   <input
@@ -381,25 +362,19 @@ const Map = (props) => {
                     type="text"
                     name="description"
                     value={currentPopupContent.description}
-                    onChange={(e) => {
-                      handlePopupContentChange(e);
-                    }}
+                    onChange={handlePopupContentChange}
                   />
                   <br />
                   <select
                     className="form-select"
-                    aria-label="Default select example"
-                    defaultValue={categories.indexOf(
-                      currentPopupContent.category
-                    )}
+                    aria-label="Kategorie auswählen"
                     name="category"
-                    onChange={(e) => {
-                      handlePopupContentChange(e);
-                    }}
+                    value={currentPopupContent.category}
+                    onChange={handlePopupContentChange}
                   >
-                    {categories.map((category, index) => (
-                      <option key={index} value={index}>
-                        {category}
+                    {categories.map((category) => (
+                      <option key={category.key} value={category.key}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
