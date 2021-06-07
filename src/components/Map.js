@@ -12,12 +12,9 @@ import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { FaTrashAlt, FaEdit, FaSave } from "react-icons/fa";
 import "firebase/firestore";
-import {
-  useFirestoreDocData,
-  useFirestore,
-  useFirebaseApp,
-  useFirestoreCollectionData,
-} from "reactfire";
+import { useFirestore, useFirestoreCollectionData } from "reactfire";
+import { categories } from "../categories";
+import firebase from "firebase";
 
 const SearchField = () => {
   const map = useMap();
@@ -54,7 +51,7 @@ const Map = () => {
   });
 
   if (status === "loading") {
-    console.log("Daten werden geladen!");
+    console.log("Data is being loaded!");
   }
 
   const [newMarker, setNewMarker] = useState();
@@ -62,6 +59,8 @@ const Map = () => {
     name: "",
     description: "",
     category: "",
+    tag: "",
+    tags: [],
   });
   const [editMode, setEditMode] = useState(false);
 
@@ -83,6 +82,8 @@ const Map = () => {
           name: "",
           description: "",
           category: "",
+          tag: "",
+          tags: [],
         });
       },
     });
@@ -93,11 +94,12 @@ const Map = () => {
   function handleSaveButton() {
     markersRef
       .add({
-        position: [newMarker.lat, newMarker.lng],
+        position: new firebase.firestore.GeoPoint(newMarker.lat, newMarker.lng),
         name: currentPopupContent.name,
         description: currentPopupContent.description,
         category: currentPopupContent.category,
         map: "xWW0J3cU3KpdP3vEarom", // Change later to actual map
+        tags: currentPopupContent.tags,
       })
       .then((result) => {
         console.log("Marker added");
@@ -112,14 +114,23 @@ const Map = () => {
       name: "",
       description: "",
       category: "",
+      tag: "",
+      tags: [],
     });
   }
 
   function handlePopupContentChange(e) {
-    setCurrentPopupContent({
-      ...currentPopupContent,
-      [e.target.name]: e.target.value,
-    });
+    if (e.target.name === "category") {
+      setCurrentPopupContent({
+        ...currentPopupContent,
+        [e.target.name]: categories[e.target.value - 1],
+      });
+    } else {
+      setCurrentPopupContent({
+        ...currentPopupContent,
+        [e.target.name]: e.target.value,
+      });
+    }
   }
 
   function handleEditButton(marker) {
@@ -127,6 +138,8 @@ const Map = () => {
       name: marker.name,
       description: marker.description,
       category: marker.category,
+      tag: "",
+      tags: [],
     });
     setEditMode(!editMode);
   }
@@ -162,9 +175,23 @@ const Map = () => {
       name: "",
       description: "",
       category: "",
+      tag: "",
+      tags: [],
     });
 
     setEditMode(false);
+  }
+
+  function addTagsToList(e) {
+    setCurrentPopupContent({
+      ...currentPopupContent,
+      tags: [...currentPopupContent.tags, currentPopupContent.tag],
+      tag: "",
+    });
+  }
+
+  function testFunction(e) {
+    console.log(currentPopupContent);
   }
 
   return (
@@ -212,18 +239,48 @@ const Map = () => {
               <div style={{ marginBottom: "3px" }}>
                 <label>
                   Kategorie: <br />
-                  <input
-                    style={{ marginLeft: "3px" }}
-                    type="text"
+                  <select
+                    className="form-select"
+                    aria-label="Default select example"
+                    defaultValue="0"
                     name="category"
-                    value={currentPopupContent.category}
                     onChange={(e) => {
                       handlePopupContentChange(e);
                     }}
-                  />
+                  >
+                    <option key={0} value={0}>
+                      Wähle eine Kategorie
+                    </option>
+                    {categories.map((category, index) => (
+                      <option key={index + 1} value={index + 1}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <br />
               </div>
+              <div style={{ marginBottom: "3px" }}>
+                <label>Tags:</label>
+                <input
+                  style={{ marginLeft: "3px" }}
+                  type="text"
+                  name="tag"
+                  value={currentPopupContent.tag}
+                  onChange={(e) => {
+                    handlePopupContentChange(e);
+                  }}
+                />
+                <div
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => addTagsToList(e)}
+                >
+                  +
+                </div>
+              </div>
+              {currentPopupContent.tags.map((tag, index) => (
+                <div key={index}>{tag}</div>
+              ))}
               <div style={{ marginLeft: "3px" }}>
                 <button
                   onClick={() => {
@@ -238,7 +295,10 @@ const Map = () => {
           </MyMarker>
         ) : null}
         {markers?.map((marker) => (
-          <Marker key={marker.id} position={marker.position}>
+          <Marker
+            key={marker.id}
+            position={[marker.position._lat, marker.position._long]}
+          >
             <Popup closeOnClick={false}>
               {!editMode ? (
                 <div>
@@ -255,20 +315,26 @@ const Map = () => {
                   <div style={{ marginBottom: "3px" }}>
                     <label>{marker.category}</label>
                     <br />
-                    <div className="buttonArea">
-                      <FaEdit
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          handleEditButton(marker);
-                        }}
-                      />
-                      <FaTrashAlt
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          handleDeleteButton(marker.id);
-                        }}
-                      />
-                    </div>
+                  </div>
+                  <div style={{ marginBottom: "3px" }}>
+                    {marker.tags.map((tag) => (
+                      <div>{tag}</div>
+                    ))}
+                    <br />
+                  </div>
+                  <div className="buttonArea">
+                    <FaEdit
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        handleEditButton(marker);
+                      }}
+                    />
+                    <FaTrashAlt
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        handleDeleteButton(marker.id);
+                      }}
+                    />
                   </div>
                 </div>
               ) : (
@@ -315,6 +381,7 @@ const Map = () => {
           </Marker>
         ))}
       </MapContainer>
+      <button onClick={testFunction}>TEst</button>
     </div>
   );
 };
