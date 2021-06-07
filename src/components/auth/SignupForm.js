@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { useAuth } from "reactfire";
+import { useAuth, useFunctions } from "reactfire";
 import { Link } from "react-router-dom";
+import "firebase/functions";
 
 const SignupForm = () => {
   const auth = useAuth();
+  const functions = useFunctions();
 
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -12,9 +14,9 @@ const SignupForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { user } = await auth.createUserWithEmailAndPassword(email, password);
+    await auth.createUserWithEmailAndPassword(email, password);
 
-    user.updateProfile({
+    await functions.httpsCallable("addUserDisplayName")({
       displayName,
     });
   };
