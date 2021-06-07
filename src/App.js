@@ -4,9 +4,9 @@ import { useSigninCheck } from "reactfire";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
-import MapList from "./components/maps/MapList";
-import MapForm from "./components/maps/MapForm";
-import Map from "./components/Map";
+import MapList from "./components/maps-list/MapList";
+import MapForm from "./components/maps-list/MapForm";
+import Map from "./components/map/Map";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import "./App.css";
@@ -57,7 +57,7 @@ function MainRouter() {
             <MapForm />
           </PrivateRoute>
           <PrivateRoute path="/main-map" isAuthenticated={isAuthenticated}>
-            <Map />
+            <Map mapID="xWW0J3cU3KpdP3vEarom" />
           </PrivateRoute>
           <PrivateRoute path="/map/:id/edit" isAuthenticated={isAuthenticated}>
             <MapForm />
