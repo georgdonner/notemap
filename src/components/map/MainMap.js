@@ -45,6 +45,7 @@ const MainMap = () => {
   return (
     <>
       <Map
+        editable={false}
         markers={markers}
         getMarkersRef={(mapID) =>
           firestore.collection("maps/" + mapID + "/markers")

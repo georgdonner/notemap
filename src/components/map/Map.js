@@ -51,7 +51,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
   tags: [],
 });
 
-const Map = ({ markers, getMarkersRef }) => {
+const Map = ({ markers, getMarkersRef, editable = true }) => {
   const { GeoPoint } = useFirestore;
 
   const [newMarker, setNewMarker] = useState();
@@ -181,7 +181,7 @@ const Map = ({ markers, getMarkersRef }) => {
     <div>
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />
-        <MapEvents />
+        {editable ? <MapEvents /> : null}
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -234,20 +234,22 @@ const Map = ({ markers, getMarkersRef }) => {
                       <br />
                     </div>
                   ) : null}
-                  <div className="buttonArea">
-                    <FaEdit
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        handleEditButton(marker);
-                      }}
-                    />
-                    <FaTrashAlt
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        handleDeleteButton(marker.id);
-                      }}
-                    />
-                  </div>
+                  {editable ? (
+                    <div className="buttonArea">
+                      <FaEdit
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          handleEditButton(marker);
+                        }}
+                      />
+                      <FaTrashAlt
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          handleDeleteButton(marker.id);
+                        }}
+                      />
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 //edit mode starts here
