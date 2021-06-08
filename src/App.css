@@ -1,4 +1,4 @@
 .leaflet-container{
-  width: 100vw;
+  width: calc(100vw - 3rem);
   height: 100vh;
 }
