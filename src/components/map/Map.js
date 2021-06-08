@@ -24,6 +24,9 @@ const SearchField = () => {
 
     const searchControl = new GeoSearchControl({
       provider: provider,
+      showMarker: false,
+      autoClose: true,
+      searchLabel: "Adresse eingeben",
     });
 
     map.addControl(searchControl);
