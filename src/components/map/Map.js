@@ -119,6 +119,7 @@ const Map = () => {
   }
 
   function handlePopupContentChange(e) {
+    console.log(e);
     setCurrentPopupContent({
       ...currentPopupContent,
       [e.target.name]: e.target.value,
@@ -201,15 +202,21 @@ const Map = () => {
         />
         {newMarker ? (
           <InstantPopupMarker position={[newMarker.lat, newMarker.lng]}>
-            <Popup onClose={() => setNewMarker(null)} closeOnClick={false}>
-              <MarkerForm
-                content={currentPopupContent}
-                onChange={handlePopupContentChange}
-                addTag={addTag}
-                deleteTag={deleteTag}
-                onSave={handleSaveButton}
-              />
-            </Popup>
+            <div>
+              <Popup
+                onClose={() => setNewMarker(null)}
+                closeOnClick={false}
+                style={{ maxWidth: "200px" }}
+              >
+                <MarkerForm
+                  content={currentPopupContent}
+                  onChange={handlePopupContentChange}
+                  addTag={addTag}
+                  deleteTag={deleteTag}
+                  onSave={handleSaveButton}
+                />
+              </Popup>
+            </div>
           </InstantPopupMarker>
         ) : null}
         {markers?.map((marker) => (
