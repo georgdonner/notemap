@@ -11,6 +11,7 @@ import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import { useFirestore, useFirestoreCollectionData } from "reactfire";
+import { useParams } from "react-router";
 
 import MarkerForm from "./MarkerForm";
 import { categories } from "../../categories";
@@ -49,9 +50,10 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
 });
 
 const Map = () => {
+  const { id } = useParams();
   const { GeoPoint } = useFirestore;
   const firestore = useFirestore();
-  const markersRef = firestore.collection("marker");
+  const markersRef = firestore.collection("maps/" + id + "/markers");
 
   const { status, data: markers } = useFirestoreCollectionData(markersRef, {
     idField: "id",
