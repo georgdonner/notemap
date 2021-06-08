@@ -1,4 +1,5 @@
 import { categories } from "../../categories";
+import "../../App.css";
 
 const MarkerForm = ({
   content,
@@ -27,12 +28,12 @@ const MarkerForm = ({
         </div>
         <div className="form-group" style={{ marginBottom: "3px" }}>
           <label htmlFor="inputDescription">Beschreibung</label>
-          <input
+          <textarea
             value={content.description}
             onChange={onChange}
             type="text"
             name="description"
-            className="form-control"
+            className="form-control textAreaDescription"
             id="inputDescription"
             aria-describedby="description"
             placeholder="Beschreibung eingeben"
@@ -90,7 +91,7 @@ const MarkerForm = ({
         {content.tags.map((tag) => (
           <span
             key={tag}
-            style={{ fontSize: "12px", margin: "1px" }}
+            style={{ fontSize: "14px", margin: "1px" }}
             className="badge rounded-pill bg-light text-dark"
           >
             <div style={{ display: "flex", flexDirection: "row" }}>
@@ -106,7 +107,10 @@ const MarkerForm = ({
             </div>
           </span>
         ))}
-        <div style={{ marginTop: "10px" }}>
+        <div
+          style={{ marginTop: "10px" }}
+          className=" d-flex justify-content-end"
+        >
           <button
             onClick={editMode ? onEdit : onSave}
             type="button"

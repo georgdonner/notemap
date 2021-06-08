@@ -9,9 +9,9 @@ import {
 } from "react-leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
-import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import { useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useParams } from "react-router";
+import "../../App.css";
 
 import MarkerForm from "./MarkerForm";
 import { categories } from "../../categories";
@@ -119,7 +119,6 @@ const Map = () => {
   }
 
   function handlePopupContentChange(e) {
-    console.log(e);
     setCurrentPopupContent({
       ...currentPopupContent,
       [e.target.name]: e.target.value,
@@ -187,10 +186,6 @@ const Map = () => {
     });
   }
 
-  function testFunction(e) {
-    console.log(currentPopupContent.tags);
-  }
-
   return (
     <div>
       <MapContainer center={[51.505, -0.09]} zoom={13}>
@@ -228,43 +223,59 @@ const Map = () => {
               {!editMode ? (
                 <div>
                   <div style={{ marginBottom: "3px" }}>
-                    <label>
+                    <label style={{ fontSize: "20px" }}>
                       <b>{marker.name}</b>
                     </label>
-                    <br />
+                    <div>
+                      <label style={{ fontSize: "14px" }}>
+                        {
+                          categories.find(({ key }) => key === marker.category)
+                            .name
+                        }
+                      </label>
+                    </div>
                   </div>
                   <div style={{ marginBottom: "3px" }}>
-                    <label>{marker.description}</label>
-                    <br />
-                  </div>
-                  <div style={{ marginBottom: "3px" }}>
-                    <label>
-                      {
-                        categories.find(({ key }) => key === marker.category)
-                          .name
-                      }
+                    <label style={{ fontSize: "16px" }}>
+                      {marker.description}
                     </label>
                     <br />
                   </div>
                   <div style={{ marginBottom: "3px" }}>
-                    {marker.tags.map((tag, index) => (
-                      <div key={index}>{tag}</div>
+                    {marker.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        style={{ fontSize: "14px", margin: "1px" }}
+                        className="badge rounded-pill bg-light text-dark"
+                      >
+                        {tag}
+                      </span>
                     ))}
                     <br />
                   </div>
-                  <div className="buttonArea">
-                    <FaEdit
+                  <div className="buttonArea d-flex justify-content-end">
+                    <button
+                      style={{
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        handleDeleteButton(marker.id);
+                      }}
+                      type="button"
+                      className="btn btn-danger m-1"
+                    >
+                      Löschen
+                    </button>
+                    <button
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         handleEditButton(marker);
                       }}
-                    />
-                    <FaTrashAlt
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        handleDeleteButton(marker.id);
-                      }}
-                    />
+                      type="button"
+                      className="btn btn-info m-1"
+                    >
+                      Anpassen
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -282,7 +293,6 @@ const Map = () => {
           </Marker>
         ))}
       </MapContainer>
-      <button onClick={testFunction}>TEst</button>
     </div>
   );
 };
