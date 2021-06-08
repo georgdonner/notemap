@@ -6,7 +6,8 @@ import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
 import MapList from "./components/maps-list/MapList";
 import MapForm from "./components/maps-list/MapForm";
-import Map from "./components/map/Map";
+import MainMap from "./components/map/MainMap";
+import SingleMap from "./components/map/SingleMap";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
 import "./App.css";
@@ -57,10 +58,10 @@ function MainRouter() {
             <MapForm />
           </PrivateRoute>
           <PrivateRoute path="/main-map" isAuthenticated={isAuthenticated}>
-            <Map mapID="xWW0J3cU3KpdP3vEarom" />
+            <MainMap />
           </PrivateRoute>
           <PrivateRoute path="/map/:id" isAuthenticated={isAuthenticated}>
-            <Map />
+            <SingleMap />
           </PrivateRoute>
           <PrivateRoute path="/map/:id/edit" isAuthenticated={isAuthenticated}>
             <MapForm />

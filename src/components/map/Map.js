@@ -10,14 +10,13 @@ import {
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { FaTrashAlt, FaEdit } from "react-icons/fa";
-import { useFirestore, useFirestoreCollectionData } from "reactfire";
-import { useParams } from "react-router";
+import { useFirestore } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
 import { categories } from "../../categories";
 
 const SearchField = () => {
-  const map = useMap();
+  const leafletMap = useMap();
 
   useEffect(() => {
     const provider = new OpenStreetMapProvider();
@@ -29,9 +28,9 @@ const SearchField = () => {
       searchLabel: "Adresse eingeben",
     });
 
-    map.addControl(searchControl);
-    return () => map.removeControl(searchControl);
-  }, [map]);
+    leafletMap.addControl(searchControl);
+    return () => leafletMap.removeControl(searchControl);
+  }, [leafletMap]);
 
   return null;
 };
@@ -52,20 +51,8 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
   tags: [],
 });
 
-const Map = () => {
-  const { id } = useParams();
+const Map = ({ markers, getMarkersRef }) => {
   const { GeoPoint } = useFirestore;
-  const firestore = useFirestore();
-  const markersRef = firestore.collection("maps/" + id + "/markers");
-
-  const { status, data: markers } = useFirestoreCollectionData(markersRef, {
-    idField: "id",
-    initialData: [],
-  });
-
-  if (status === "loading") {
-    console.log("Data is being loaded!");
-  }
 
   const [newMarker, setNewMarker] = useState();
   const [currentPopupContent, setCurrentPopupContent] = useState(
@@ -99,7 +86,7 @@ const Map = () => {
   }
 
   function handleSaveButton() {
-    markersRef
+    getMarkersRef()
       .add({
         position: new GeoPoint(newMarker.lat, newMarker.lng),
         name: currentPopupContent.name,
@@ -131,13 +118,13 @@ const Map = () => {
       description: marker.description,
       category: marker.category,
       tag: "",
-      tags: marker.tags,
+      tags: marker.tags || [],
     });
     setEditMode(true);
   }
 
   function handleDeleteButton(id) {
-    markersRef
+    getMarkersRef()
       .doc(id)
       .delete()
       .then((result) => {
@@ -149,7 +136,7 @@ const Map = () => {
   }
 
   function handleEditSaveButton(id) {
-    markersRef
+    getMarkersRef()
       .doc(id)
       .update({
         name: currentPopupContent.name,
@@ -212,7 +199,7 @@ const Map = () => {
             </Popup>
           </InstantPopupMarker>
         ) : null}
-        {markers?.map((marker) => (
+        {markers.map((marker) => (
           <Marker
             key={marker.id}
             position={[marker.position._lat, marker.position._long]}
@@ -239,12 +226,14 @@ const Map = () => {
                     </label>
                     <br />
                   </div>
-                  <div style={{ marginBottom: "3px" }}>
-                    {marker.tags.map((tag, index) => (
-                      <div key={index}>{tag}</div>
-                    ))}
-                    <br />
-                  </div>
+                  {marker.tags?.length ? (
+                    <div style={{ marginBottom: "3px" }}>
+                      {marker.tags.map((tag) => (
+                        <div key={tag}>{tag}</div>
+                      ))}
+                      <br />
+                    </div>
+                  ) : null}
                   <div className="buttonArea">
                     <FaEdit
                       style={{ cursor: "pointer" }}
