@@ -16,7 +16,6 @@ const MarkerCollection = ({ map, renderMarker, singleMap }) => {
 
   useEffect(() => {
     if (!mapCentered) {
-      setMapCentered(true);
       let minLat, minLong, maxLat, maxLong;
       for (const marker of data) {
         const { _lat: lat, _long: long } = marker.position;
@@ -41,6 +40,7 @@ const MarkerCollection = ({ map, renderMarker, singleMap }) => {
             newBounds = currentBounds.extend(newBounds);
           }
         }
+        setMapCentered(true);
         leafletMap.fitBounds(newBounds);
       }
     }

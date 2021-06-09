@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { renderToString } from "react-dom/server";
 import {
   MapContainer,
   TileLayer,
@@ -7,6 +8,7 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
+import { DivIcon } from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { FaTrashAlt, FaEdit } from "react-icons/fa";
@@ -179,10 +181,28 @@ const Map = ({ getMarkersRef, maps }) => {
   }
 
   function renderMarker(marker) {
+    const category = categories.find((ctg) => ctg.key === marker.category);
+
     return (
       <Marker
         key={marker.id}
         position={[marker.position._lat, marker.position._long]}
+        icon={
+          new DivIcon({
+            html: renderToString(
+              <>
+                <div
+                  style={{ backgroundColor: marker.map.color }}
+                  className="marker-pin"
+                ></div>
+                <category.icon color="white" />
+              </>
+            ),
+            iconSize: [30, 42],
+            iconAnchor: [15, 42],
+            className: "custom-div-icon",
+          })
+        }
       >
         <Popup closeOnClick={false}>
           {!editMode ? (
@@ -198,9 +218,7 @@ const Map = ({ getMarkersRef, maps }) => {
                 <br />
               </div>
               <div style={{ marginBottom: "3px" }}>
-                <label>
-                  {categories.find(({ key }) => key === marker.category).name}
-                </label>
+                <label>{category.name}</label>
                 <br />
               </div>
               {marker.tags?.length ? (
