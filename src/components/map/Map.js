@@ -269,6 +269,7 @@ const Map = ({ getMarkersRef, maps }) => {
             key={map.id}
             map={map}
             renderMarker={renderMarker}
+            singleMap={maps.length <= 1}
           />
         ))}
       </MapContainer>
