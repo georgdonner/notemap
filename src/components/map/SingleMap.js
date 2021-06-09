@@ -1,8 +1,4 @@
-import {
-  useFirestore,
-  useFirestoreDocData,
-  useFirestoreCollectionData,
-} from "reactfire";
+import { useFirestore, useFirestoreDocData } from "reactfire";
 import { useParams } from "react-router";
 
 import Map from "./Map";
@@ -17,16 +13,12 @@ const SingleMap = () => {
   });
 
   const markersRef = firestore.collection("maps/" + id + "/markers");
-  const { data: markers } = useFirestoreCollectionData(markersRef, {
-    idField: "id",
-    initialData: [],
-  });
 
   return map ? (
     <div style={{ margin: "0 1.5rem" }}>
       <h2 className="my-3">{map.name}</h2>
       {map.description ? <p className="mb-3">{map.description}</p> : null}
-      <Map markers={markers} getMarkersRef={() => markersRef} />
+      <Map maps={map ? [map] : []} getMarkersRef={() => markersRef} />
     </div>
   ) : (
     <div

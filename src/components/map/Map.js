@@ -13,6 +13,7 @@ import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import { useFirestore } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
+import MarkerCollection from "./MarkerCollection";
 import { categories } from "../../categories";
 
 const SearchField = () => {
@@ -51,7 +52,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
   tags: [],
 });
 
-const Map = ({ markers, getMarkersRef, editable = true }) => {
+const Map = ({ getMarkersRef, maps }) => {
   const { GeoPoint } = useFirestore;
 
   const [newMarker, setNewMarker] = useState();
@@ -68,7 +69,7 @@ const Map = ({ markers, getMarkersRef, editable = true }) => {
     useMapEvents({
       click: (e) => {
         setNewMarker({
-          id: markers.length,
+          id: Date.now(),
           lat: e.latlng.lat,
           lng: e.latlng.lng,
           name: currentPopupContent.name,
@@ -177,11 +178,75 @@ const Map = ({ markers, getMarkersRef, editable = true }) => {
     console.log(currentPopupContent.tags);
   }
 
+  function renderMarker(marker) {
+    return (
+      <Marker
+        key={marker.id}
+        position={[marker.position._lat, marker.position._long]}
+      >
+        <Popup closeOnClick={false}>
+          {!editMode ? (
+            <div>
+              <div style={{ marginBottom: "3px" }}>
+                <label>
+                  <b>{marker.name}</b>
+                </label>
+                <br />
+              </div>
+              <div style={{ marginBottom: "3px" }}>
+                <label>{marker.description}</label>
+                <br />
+              </div>
+              <div style={{ marginBottom: "3px" }}>
+                <label>
+                  {categories.find(({ key }) => key === marker.category).name}
+                </label>
+                <br />
+              </div>
+              {marker.tags?.length ? (
+                <div style={{ marginBottom: "3px" }}>
+                  {marker.tags.map((tag) => (
+                    <div key={tag}>{tag}</div>
+                  ))}
+                  <br />
+                </div>
+              ) : null}
+              <div className="buttonArea">
+                <FaEdit
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    handleEditButton(marker);
+                  }}
+                />
+                <FaTrashAlt
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    handleDeleteButton(marker.id);
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            //edit mode starts here
+            <MarkerForm
+              content={currentPopupContent}
+              onChange={handlePopupContentChange}
+              addTag={addTag}
+              deleteTag={deleteTag}
+              onEdit={() => handleEditSaveButton(marker.id)}
+              editMode
+            />
+          )}
+        </Popup>
+      </Marker>
+    );
+  }
+
   return (
     <div>
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />
-        {editable ? <MapEvents /> : null}
+        <MapEvents />
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -199,71 +264,12 @@ const Map = ({ markers, getMarkersRef, editable = true }) => {
             </Popup>
           </InstantPopupMarker>
         ) : null}
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id}
-            position={[marker.position._lat, marker.position._long]}
-          >
-            <Popup closeOnClick={false}>
-              {!editMode ? (
-                <div>
-                  <div style={{ marginBottom: "3px" }}>
-                    <label>
-                      <b>{marker.name}</b>
-                    </label>
-                    <br />
-                  </div>
-                  <div style={{ marginBottom: "3px" }}>
-                    <label>{marker.description}</label>
-                    <br />
-                  </div>
-                  <div style={{ marginBottom: "3px" }}>
-                    <label>
-                      {
-                        categories.find(({ key }) => key === marker.category)
-                          .name
-                      }
-                    </label>
-                    <br />
-                  </div>
-                  {marker.tags?.length ? (
-                    <div style={{ marginBottom: "3px" }}>
-                      {marker.tags.map((tag) => (
-                        <div key={tag}>{tag}</div>
-                      ))}
-                      <br />
-                    </div>
-                  ) : null}
-                  {editable ? (
-                    <div className="buttonArea">
-                      <FaEdit
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          handleEditButton(marker);
-                        }}
-                      />
-                      <FaTrashAlt
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          handleDeleteButton(marker.id);
-                        }}
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                //edit mode starts here
-                <MarkerForm
-                  content={currentPopupContent}
-                  onChange={handlePopupContentChange}
-                  addTag={addTag}
-                  deleteTag={deleteTag}
-                  onEdit={() => handleEditSaveButton(marker.id)}
-                  editMode
-                />
-              )}
-            </Popup>
-          </Marker>
+        {maps.map((map) => (
+          <MarkerCollection
+            key={map.id}
+            map={map}
+            renderMarker={renderMarker}
+          />
         ))}
       </MapContainer>
       <button onClick={testFunction}>TEst</button>
