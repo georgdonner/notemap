@@ -9,18 +9,21 @@ const MarkerForm = ({
   onSave,
   onEdit,
   editMode,
+  inputErrors,
 }) => {
   return (
     <>
       <form style={{ width: "200px" }}>
         <div className="form-group" style={{ marginBottom: "3px" }}>
-          <label htmlFor="inputName">Name</label>
+          <label htmlFor="inputName">Name*</label>
           <input
             value={content.name}
             onChange={onChange}
             type="text"
             name="name"
-            className="form-control"
+            className={
+              inputErrors.name ? "form-control border-danger" : "form-control"
+            }
             id="inputName"
             aria-describedby="name"
             placeholder="Namen eingeben"
@@ -31,7 +34,6 @@ const MarkerForm = ({
           <textarea
             value={content.description}
             onChange={onChange}
-            type="text"
             name="description"
             className="form-control textAreaDescription"
             id="inputDescription"
@@ -41,10 +43,14 @@ const MarkerForm = ({
         </div>
         <div className="form-group" style={{ marginBottom: "3px" }}>
           <label>
-            Kategorie
+            Kategorie*
             <select
-              className="form-select"
               aria-label="Kategorie auswählen"
+              className={
+                inputErrors.category
+                  ? "form-select border-danger textAreaDescription"
+                  : "form-select textAreaDescription"
+              }
               name="category"
               value={content.category}
               onChange={onChange}

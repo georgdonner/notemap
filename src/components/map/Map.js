@@ -67,6 +67,10 @@ const Map = () => {
     console.log("Data is being loaded!");
   }
 
+  const [inputErrors, setInputErrors] = useState({
+    name: false,
+    category: false,
+  });
   const [newMarker, setNewMarker] = useState();
   const [currentPopupContent, setCurrentPopupContent] = useState(
     DEFAULT_POPUP_CONTENT
@@ -75,6 +79,11 @@ const Map = () => {
 
   function resetPopupContent() {
     setCurrentPopupContent(DEFAULT_POPUP_CONTENT);
+    setNewMarker(null);
+    setInputErrors({
+      name: false,
+      category: false,
+    });
   }
 
   function MapEvents() {
@@ -99,23 +108,38 @@ const Map = () => {
   }
 
   function handleSaveButton() {
-    markersRef
-      .add({
-        position: new GeoPoint(newMarker.lat, newMarker.lng),
-        name: currentPopupContent.name,
-        description: currentPopupContent.description,
-        category: currentPopupContent.category,
-        tags: currentPopupContent.tags,
-      })
-      .then((result) => {
-        console.log("Marker added");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    let nameError = false,
+      categoryError = false;
 
-    setNewMarker(null);
-    resetPopupContent();
+    if (currentPopupContent.name === "") {
+      nameError = true;
+    }
+
+    if (currentPopupContent.category === "") {
+      categoryError = true;
+    }
+
+    setInputErrors({ name: nameError, category: categoryError });
+
+    if (nameError === false && categoryError === false) {
+      markersRef
+        .add({
+          position: new GeoPoint(newMarker.lat, newMarker.lng),
+          name: currentPopupContent.name,
+          description: currentPopupContent.description,
+          category: currentPopupContent.category,
+          tags: currentPopupContent.tags,
+        })
+        .then((result) => {
+          console.log("Marker added");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      setNewMarker(null);
+      resetPopupContent();
+    }
   }
 
   function handlePopupContentChange(e) {
@@ -149,23 +173,38 @@ const Map = () => {
   }
 
   function handleEditSaveButton(id) {
-    markersRef
-      .doc(id)
-      .update({
-        name: currentPopupContent.name,
-        description: currentPopupContent.description,
-        category: currentPopupContent.category,
-        tags: currentPopupContent.tags,
-      })
-      .then((result) => {
-        console.log("Marker edited");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    let nameError = false,
+      categoryError = false;
 
-    resetPopupContent();
-    setEditMode(false);
+    if (currentPopupContent.name === "") {
+      nameError = true;
+    }
+
+    if (currentPopupContent.category === "") {
+      categoryError = true;
+    }
+
+    setInputErrors({ name: nameError, category: categoryError });
+
+    if (nameError === false && categoryError === false) {
+      markersRef
+        .doc(id)
+        .update({
+          name: currentPopupContent.name,
+          description: currentPopupContent.description,
+          category: currentPopupContent.category,
+          tags: currentPopupContent.tags,
+        })
+        .then((result) => {
+          console.log("Marker edited");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      resetPopupContent();
+      setEditMode(false);
+    }
   }
 
   function addTag() {
@@ -184,6 +223,10 @@ const Map = () => {
       ...currentPopupContent,
       tags: currentPopupContent.tags.filter((tag) => deletedTag !== tag),
     });
+  }
+
+  function testFunction() {
+    console.log(inputErrors);
   }
 
   return (
@@ -209,6 +252,8 @@ const Map = () => {
                   addTag={addTag}
                   deleteTag={deleteTag}
                   onSave={handleSaveButton}
+                  errors
+                  inputErrors={inputErrors}
                 />
               </Popup>
             </div>
@@ -287,12 +332,14 @@ const Map = () => {
                   deleteTag={deleteTag}
                   onEdit={() => handleEditSaveButton(marker.id)}
                   editMode
+                  inputErrors={inputErrors}
                 />
               )}
             </Popup>
           </Marker>
         ))}
       </MapContainer>
+      <button onClick={testFunction}>test</button>
     </div>
   );
 };
