@@ -19,7 +19,10 @@ import Sidebar from "../sidebar/sidebar";
 import { categories } from "../../categories";
 const { Index } = require("flexsearch");
 
-const searchIndex = new Index("performance");
+const searchIndex = new Index({
+  preset: "performance",
+  tokenize: "full",
+});
 
 const SearchField = () => {
   const leafletMap = useMap();
@@ -220,10 +223,8 @@ const Map = ({ getMarkersRef, maps }) => {
   }
 
   function testFunction() {
-    let test = searchIndex.search("test");
-
-    console.log(searchIndex);
-    console.log(test);
+    console.log(searchIndex.search("test"));
+    console.log(searchIndex.search("te"));
   }
 
   function renderMarker(marker) {
