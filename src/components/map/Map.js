@@ -17,6 +17,9 @@ import MarkerForm from "./MarkerForm";
 import MarkerCollection from "./MarkerCollection";
 import Sidebar from "../sidebar/sidebar";
 import { categories } from "../../categories";
+const { Index } = require("flexsearch");
+
+const searchIndex = new Index("performance");
 
 const SearchField = () => {
   const leafletMap = useMap();
@@ -217,7 +220,10 @@ const Map = ({ getMarkersRef, maps }) => {
   }
 
   function testFunction() {
-    console.log(inputErrors);
+    let test = searchIndex.search("test");
+
+    console.log(searchIndex);
+    console.log(test);
   }
 
   function renderMarker(marker) {
@@ -321,7 +327,7 @@ const Map = ({ getMarkersRef, maps }) => {
 
   return (
     <div>
-      <Sidebar />
+      <Sidebar searchIndex={searchIndex} />
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />
         <MapEvents />
@@ -356,6 +362,7 @@ const Map = ({ getMarkersRef, maps }) => {
             map={map}
             renderMarker={renderMarker}
             singleMap={maps.length <= 1}
+            searchIndex={searchIndex}
           />
         ))}
       </MapContainer>

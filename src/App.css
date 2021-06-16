@@ -1,6 +1,7 @@
 .leaflet-container{
-  width: calc(100vw - 3rem);
+  width: calc(100vw - 400px);
   height: 100vh;
+  float: right;
 }
 .marker-pin {
   width: 30px;

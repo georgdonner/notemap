@@ -3,7 +3,7 @@ import { useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useMap } from "react-leaflet";
 import { LatLngBounds } from "leaflet";
 
-const MarkerCollection = ({ map, renderMarker, singleMap }) => {
+const MarkerCollection = ({ map, renderMarker, singleMap, searchIndex }) => {
   const firestore = useFirestore();
   const leafletMap = useMap();
   const [mapCentered, setMapCentered] = useState(false);
@@ -13,6 +13,12 @@ const MarkerCollection = ({ map, renderMarker, singleMap }) => {
     idField: "id",
     initialData: [],
   });
+
+  useEffect(() => {
+    for (const marker of data) {
+      searchIndex.add(marker.id, marker.name);
+    }
+  }, [data, searchIndex]);
 
   useEffect(() => {
     if (!mapCentered) {
