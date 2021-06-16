@@ -1,5 +1,4 @@
 import { categories } from "../../categories";
-import "../../App.css";
 
 const MarkerForm = ({
   content,

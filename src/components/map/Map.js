@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { renderToString } from "react-dom/server";
 import {
   MapContainer,
   TileLayer,
@@ -7,17 +8,17 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
+import { DivIcon } from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
-import { useFirestore, useFirestoreCollectionData } from "reactfire";
-import { useParams } from "react-router";
-import "../../App.css";
+import { useFirestore } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
+import MarkerCollection from "./MarkerCollection";
 import { categories } from "../../categories";
 
 const SearchField = () => {
-  const map = useMap();
+  const leafletMap = useMap();
 
   useEffect(() => {
     const provider = new OpenStreetMapProvider();
@@ -29,9 +30,9 @@ const SearchField = () => {
       searchLabel: "Adresse eingeben",
     });
 
-    map.addControl(searchControl);
-    return () => map.removeControl(searchControl);
-  }, [map]);
+    leafletMap.addControl(searchControl);
+    return () => leafletMap.removeControl(searchControl);
+  }, [leafletMap]);
 
   return null;
 };
@@ -52,20 +53,8 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
   tags: [],
 });
 
-const Map = () => {
-  const { id } = useParams();
+const Map = ({ getMarkersRef, maps }) => {
   const { GeoPoint } = useFirestore;
-  const firestore = useFirestore();
-  const markersRef = firestore.collection("maps/" + id + "/markers");
-
-  const { status, data: markers } = useFirestoreCollectionData(markersRef, {
-    idField: "id",
-    initialData: [],
-  });
-
-  if (status === "loading") {
-    console.log("Data is being loaded!");
-  }
 
   const [inputErrors, setInputErrors] = useState({
     name: false,
@@ -90,7 +79,7 @@ const Map = () => {
     useMapEvents({
       click: (e) => {
         setNewMarker({
-          id: markers.length,
+          id: Date.now(),
           lat: e.latlng.lat,
           lng: e.latlng.lng,
           name: currentPopupContent.name,
@@ -122,7 +111,7 @@ const Map = () => {
     setInputErrors({ name: nameError, category: categoryError });
 
     if (nameError === false && categoryError === false) {
-      markersRef
+      getMarkersRef()
         .add({
           position: new GeoPoint(newMarker.lat, newMarker.lng),
           name: currentPopupContent.name,
@@ -155,13 +144,13 @@ const Map = () => {
       description: marker.description,
       category: marker.category,
       tag: "",
-      tags: marker.tags,
+      tags: marker.tags || [],
     });
     setEditMode(true);
   }
 
   function handleDeleteButton(id) {
-    markersRef
+    getMarkersRef()
       .doc(id)
       .delete()
       .then((result) => {
@@ -187,7 +176,7 @@ const Map = () => {
     setInputErrors({ name: nameError, category: categoryError });
 
     if (nameError === false && categoryError === false) {
-      markersRef
+      getMarkersRef()
         .doc(id)
         .update({
           name: currentPopupContent.name,
@@ -229,6 +218,105 @@ const Map = () => {
     console.log(inputErrors);
   }
 
+  function renderMarker(marker) {
+    const category = categories.find((ctg) => ctg.key === marker.category);
+
+    return (
+      <Marker
+        key={marker.id}
+        position={[marker.position._lat, marker.position._long]}
+        icon={
+          new DivIcon({
+            html: renderToString(
+              <>
+                <div
+                  style={{ backgroundColor: marker.map.color }}
+                  className="marker-pin"
+                ></div>
+                <category.icon color="white" />
+              </>
+            ),
+            iconSize: [30, 42],
+            iconAnchor: [15, 42],
+            className: "custom-div-icon",
+          })
+        }
+      >
+        <Popup closeOnClick={false}>
+          {!editMode ? (
+            <div>
+              <div style={{ marginBottom: "3px" }}>
+                <label style={{ fontSize: "20px" }}>
+                  <b>{marker.name}</b>
+                </label>
+                <div>
+                  <label style={{ fontSize: "14px" }}>{category.name}</label>
+                </div>
+              </div>
+              {marker.description ? (
+                <div style={{ marginBottom: "3px" }}>
+                  <label style={{ fontSize: "16px" }}>
+                    {marker.description}
+                  </label>
+                  <br />
+                </div>
+              ) : null}
+              {marker.tags?.length ? (
+                <div style={{ marginBottom: "3px" }}>
+                  {marker.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      style={{ fontSize: "14px", margin: "1px" }}
+                      className="badge rounded-pill bg-light text-dark"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  <br />
+                </div>
+              ) : null}
+              <div className="buttonArea d-flex justify-content-end">
+                <button
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    handleDeleteButton(marker.id);
+                  }}
+                  type="button"
+                  className="btn btn-danger m-1"
+                >
+                  Löschen
+                </button>
+                <button
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    handleEditButton(marker);
+                  }}
+                  type="button"
+                  className="btn btn-info m-1"
+                >
+                  Anpassen
+                </button>
+              </div>
+            </div>
+          ) : (
+            //edit mode starts here
+            <MarkerForm
+              content={currentPopupContent}
+              onChange={handlePopupContentChange}
+              addTag={addTag}
+              deleteTag={deleteTag}
+              onEdit={() => handleEditSaveButton(marker.id)}
+              editMode
+              inputErrors={inputErrors}
+            />
+          )}
+        </Popup>
+      </Marker>
+    );
+  }
+
   return (
     <div>
       <MapContainer center={[51.505, -0.09]} zoom={13}>
@@ -259,84 +347,13 @@ const Map = () => {
             </div>
           </InstantPopupMarker>
         ) : null}
-        {markers?.map((marker) => (
-          <Marker
-            key={marker.id}
-            position={[marker.position._lat, marker.position._long]}
-          >
-            <Popup closeOnClick={false}>
-              {!editMode ? (
-                <div>
-                  <div style={{ marginBottom: "3px" }}>
-                    <label style={{ fontSize: "20px" }}>
-                      <b>{marker.name}</b>
-                    </label>
-                    <div>
-                      <label style={{ fontSize: "14px" }}>
-                        {
-                          categories.find(({ key }) => key === marker.category)
-                            .name
-                        }
-                      </label>
-                    </div>
-                  </div>
-                  <div style={{ marginBottom: "3px" }}>
-                    <label style={{ fontSize: "16px" }}>
-                      {marker.description}
-                    </label>
-                    <br />
-                  </div>
-                  <div style={{ marginBottom: "3px" }}>
-                    {marker.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        style={{ fontSize: "14px", margin: "1px" }}
-                        className="badge rounded-pill bg-light text-dark"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    <br />
-                  </div>
-                  <div className="buttonArea d-flex justify-content-end">
-                    <button
-                      style={{
-                        cursor: "pointer",
-                      }}
-                      onClick={() => {
-                        handleDeleteButton(marker.id);
-                      }}
-                      type="button"
-                      className="btn btn-danger m-1"
-                    >
-                      Löschen
-                    </button>
-                    <button
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        handleEditButton(marker);
-                      }}
-                      type="button"
-                      className="btn btn-info m-1"
-                    >
-                      Anpassen
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                //edit mode starts here
-                <MarkerForm
-                  content={currentPopupContent}
-                  onChange={handlePopupContentChange}
-                  addTag={addTag}
-                  deleteTag={deleteTag}
-                  onEdit={() => handleEditSaveButton(marker.id)}
-                  editMode
-                  inputErrors={inputErrors}
-                />
-              )}
-            </Popup>
-          </Marker>
+        {maps.map((map) => (
+          <MarkerCollection
+            key={map.id}
+            map={map}
+            renderMarker={renderMarker}
+            singleMap={maps.length <= 1}
+          />
         ))}
       </MapContainer>
       <button onClick={testFunction}>test</button>
