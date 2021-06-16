@@ -9,9 +9,9 @@ import {
 } from "react-leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
-import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import { useFirestore, useFirestoreCollectionData } from "reactfire";
 import { useParams } from "react-router";
+import "../../App.css";
 
 import MarkerForm from "./MarkerForm";
 import { categories } from "../../categories";
@@ -67,6 +67,10 @@ const Map = () => {
     console.log("Data is being loaded!");
   }
 
+  const [inputErrors, setInputErrors] = useState({
+    name: false,
+    category: false,
+  });
   const [newMarker, setNewMarker] = useState();
   const [currentPopupContent, setCurrentPopupContent] = useState(
     DEFAULT_POPUP_CONTENT
@@ -75,6 +79,11 @@ const Map = () => {
 
   function resetPopupContent() {
     setCurrentPopupContent(DEFAULT_POPUP_CONTENT);
+    setNewMarker(null);
+    setInputErrors({
+      name: false,
+      category: false,
+    });
   }
 
   function MapEvents() {
@@ -99,23 +108,38 @@ const Map = () => {
   }
 
   function handleSaveButton() {
-    markersRef
-      .add({
-        position: new GeoPoint(newMarker.lat, newMarker.lng),
-        name: currentPopupContent.name,
-        description: currentPopupContent.description,
-        category: currentPopupContent.category,
-        tags: currentPopupContent.tags,
-      })
-      .then((result) => {
-        console.log("Marker added");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    let nameError = false,
+      categoryError = false;
 
-    setNewMarker(null);
-    resetPopupContent();
+    if (currentPopupContent.name === "") {
+      nameError = true;
+    }
+
+    if (currentPopupContent.category === "") {
+      categoryError = true;
+    }
+
+    setInputErrors({ name: nameError, category: categoryError });
+
+    if (nameError === false && categoryError === false) {
+      markersRef
+        .add({
+          position: new GeoPoint(newMarker.lat, newMarker.lng),
+          name: currentPopupContent.name,
+          description: currentPopupContent.description,
+          category: currentPopupContent.category,
+          tags: currentPopupContent.tags,
+        })
+        .then((result) => {
+          console.log("Marker added");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      setNewMarker(null);
+      resetPopupContent();
+    }
   }
 
   function handlePopupContentChange(e) {
@@ -149,23 +173,38 @@ const Map = () => {
   }
 
   function handleEditSaveButton(id) {
-    markersRef
-      .doc(id)
-      .update({
-        name: currentPopupContent.name,
-        description: currentPopupContent.description,
-        category: currentPopupContent.category,
-        tags: currentPopupContent.tags,
-      })
-      .then((result) => {
-        console.log("Marker edited");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    let nameError = false,
+      categoryError = false;
 
-    resetPopupContent();
-    setEditMode(false);
+    if (currentPopupContent.name === "") {
+      nameError = true;
+    }
+
+    if (currentPopupContent.category === "") {
+      categoryError = true;
+    }
+
+    setInputErrors({ name: nameError, category: categoryError });
+
+    if (nameError === false && categoryError === false) {
+      markersRef
+        .doc(id)
+        .update({
+          name: currentPopupContent.name,
+          description: currentPopupContent.description,
+          category: currentPopupContent.category,
+          tags: currentPopupContent.tags,
+        })
+        .then((result) => {
+          console.log("Marker edited");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      resetPopupContent();
+      setEditMode(false);
+    }
   }
 
   function addTag() {
@@ -186,8 +225,8 @@ const Map = () => {
     });
   }
 
-  function testFunction(e) {
-    console.log(currentPopupContent.tags);
+  function testFunction() {
+    console.log(inputErrors);
   }
 
   return (
@@ -201,15 +240,23 @@ const Map = () => {
         />
         {newMarker ? (
           <InstantPopupMarker position={[newMarker.lat, newMarker.lng]}>
-            <Popup onClose={() => setNewMarker(null)} closeOnClick={false}>
-              <MarkerForm
-                content={currentPopupContent}
-                onChange={handlePopupContentChange}
-                addTag={addTag}
-                deleteTag={deleteTag}
-                onSave={handleSaveButton}
-              />
-            </Popup>
+            <div>
+              <Popup
+                onClose={() => setNewMarker(null)}
+                closeOnClick={false}
+                style={{ maxWidth: "200px" }}
+              >
+                <MarkerForm
+                  content={currentPopupContent}
+                  onChange={handlePopupContentChange}
+                  addTag={addTag}
+                  deleteTag={deleteTag}
+                  onSave={handleSaveButton}
+                  errors
+                  inputErrors={inputErrors}
+                />
+              </Popup>
+            </div>
           </InstantPopupMarker>
         ) : null}
         {markers?.map((marker) => (
@@ -221,43 +268,59 @@ const Map = () => {
               {!editMode ? (
                 <div>
                   <div style={{ marginBottom: "3px" }}>
-                    <label>
+                    <label style={{ fontSize: "20px" }}>
                       <b>{marker.name}</b>
                     </label>
-                    <br />
+                    <div>
+                      <label style={{ fontSize: "14px" }}>
+                        {
+                          categories.find(({ key }) => key === marker.category)
+                            .name
+                        }
+                      </label>
+                    </div>
                   </div>
                   <div style={{ marginBottom: "3px" }}>
-                    <label>{marker.description}</label>
-                    <br />
-                  </div>
-                  <div style={{ marginBottom: "3px" }}>
-                    <label>
-                      {
-                        categories.find(({ key }) => key === marker.category)
-                          .name
-                      }
+                    <label style={{ fontSize: "16px" }}>
+                      {marker.description}
                     </label>
                     <br />
                   </div>
                   <div style={{ marginBottom: "3px" }}>
-                    {marker.tags.map((tag, index) => (
-                      <div key={index}>{tag}</div>
+                    {marker.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        style={{ fontSize: "14px", margin: "1px" }}
+                        className="badge rounded-pill bg-light text-dark"
+                      >
+                        {tag}
+                      </span>
                     ))}
                     <br />
                   </div>
-                  <div className="buttonArea">
-                    <FaEdit
+                  <div className="buttonArea d-flex justify-content-end">
+                    <button
+                      style={{
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        handleDeleteButton(marker.id);
+                      }}
+                      type="button"
+                      className="btn btn-danger m-1"
+                    >
+                      Löschen
+                    </button>
+                    <button
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         handleEditButton(marker);
                       }}
-                    />
-                    <FaTrashAlt
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        handleDeleteButton(marker.id);
-                      }}
-                    />
+                      type="button"
+                      className="btn btn-info m-1"
+                    >
+                      Anpassen
+                    </button>
                   </div>
                 </div>
               ) : (
@@ -269,13 +332,14 @@ const Map = () => {
                   deleteTag={deleteTag}
                   onEdit={() => handleEditSaveButton(marker.id)}
                   editMode
+                  inputErrors={inputErrors}
                 />
               )}
             </Popup>
           </Marker>
         ))}
       </MapContainer>
-      <button onClick={testFunction}>TEst</button>
+      <button onClick={testFunction}>test</button>
     </div>
   );
 };
