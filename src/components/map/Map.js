@@ -250,9 +250,7 @@ const Map = ({ getMarkersRef, maps }) => {
                   <b>{marker.name}</b>
                 </label>
                 <div>
-                  <label style={{ fontSize: "14px" }}>
-                    {categories.find(({ key }) => key === marker.category).name}
-                  </label>
+                  <label style={{ fontSize: "14px" }}>{category.name}</label>
                 </div>
               </div>
               {marker.description ? (

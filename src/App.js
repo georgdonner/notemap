@@ -60,11 +60,11 @@ function MainRouter() {
           <PrivateRoute path="/main-map" isAuthenticated={isAuthenticated}>
             <MainMap />
           </PrivateRoute>
-          <PrivateRoute path="/map/:id" isAuthenticated={isAuthenticated}>
-            <SingleMap />
-          </PrivateRoute>
           <PrivateRoute path="/map/:id/edit" isAuthenticated={isAuthenticated}>
             <MapForm />
+          </PrivateRoute>
+          <PrivateRoute path="/map/:id" isAuthenticated={isAuthenticated}>
+            <SingleMap />
           </PrivateRoute>
           <PrivateRoute path="/" isAuthenticated={isAuthenticated}>
             <MapList />
