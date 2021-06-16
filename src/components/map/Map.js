@@ -15,6 +15,7 @@ import { useFirestore } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
 import MarkerCollection from "./MarkerCollection";
+import Sidebar from "../sidebar/sidebar";
 import { categories } from "../../categories";
 
 const SearchField = () => {
@@ -78,6 +79,7 @@ const Map = ({ getMarkersRef, maps }) => {
   function MapEvents() {
     useMapEvents({
       click: (e) => {
+        console.log(e);
         setNewMarker({
           id: Date.now(),
           lat: e.latlng.lat,
@@ -319,6 +321,7 @@ const Map = ({ getMarkersRef, maps }) => {
 
   return (
     <div>
+      <Sidebar />
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />
         <MapEvents />
