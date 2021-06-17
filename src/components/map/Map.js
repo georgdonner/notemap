@@ -226,6 +226,10 @@ const Map = ({ getMarkersRef, maps }) => {
     });
   }
 
+  function centerOnMarker(position) {
+    console.log(position);
+  }
+
   function renderMarker(marker) {
     const category = categories.find((ctg) => ctg.key === marker.category);
 
@@ -327,7 +331,7 @@ const Map = ({ getMarkersRef, maps }) => {
 
   return (
     <div>
-      <Sidebar searchIndex={searchIndex} />
+      <Sidebar searchIndex={searchIndex} centerOnMarker={centerOnMarker} />
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />
         <MapEvents />
