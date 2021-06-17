@@ -15,9 +15,16 @@ const MarkerCollection = ({ map, renderMarker, singleMap, searchIndex }) => {
   });
 
   useEffect(() => {
+    const allData = new Set(Object.keys(searchIndex.store));
+
     for (const marker of data) {
-      searchIndex.add(marker.id, marker.name);
+      allData.delete(marker.id);
+      searchIndex.add(marker);
     }
+
+    allData.forEach((markerId) => {
+      searchIndex.remove(markerId);
+    });
   }, [data, searchIndex]);
 
   useEffect(() => {

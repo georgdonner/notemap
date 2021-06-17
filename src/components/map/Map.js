@@ -15,13 +15,17 @@ import { useFirestore } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
 import MarkerCollection from "./MarkerCollection";
-import Sidebar from "../sidebar/sidebar";
+import Sidebar from "../sidebar/Sidebar";
 import { categories } from "../../categories";
-const { Index } = require("flexsearch");
+const { Document } = require("flexsearch");
 
-const searchIndex = new Index({
+const searchIndex = new Document({
   preset: "performance",
   tokenize: "full",
+  document: {
+    index: "name",
+    store: true,
+  },
 });
 
 const SearchField = () => {
@@ -222,11 +226,6 @@ const Map = ({ getMarkersRef, maps }) => {
     });
   }
 
-  function testFunction() {
-    console.log(searchIndex.search("test"));
-    console.log(searchIndex.search("te"));
-  }
-
   function renderMarker(marker) {
     const category = categories.find((ctg) => ctg.key === marker.category);
 
@@ -367,7 +366,6 @@ const Map = ({ getMarkersRef, maps }) => {
           />
         ))}
       </MapContainer>
-      <button onClick={testFunction}>test</button>
     </div>
   );
 };
