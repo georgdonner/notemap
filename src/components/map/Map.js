@@ -186,9 +186,9 @@ const Map = ({ getMarkersRef, maps }) => {
     setEditMode(true);
   }
 
-  function handleDeleteButton(id) {
-    getMarkersRef()
-      .doc(id)
+  function handleDeleteButton(marker) {
+    getMarkersRef(marker.map.id)
+      .doc(marker.id)
       .delete()
       .then((result) => {
         console.log("Marker deleted");
@@ -198,7 +198,7 @@ const Map = ({ getMarkersRef, maps }) => {
       });
   }
 
-  function handleEditSaveButton(id) {
+  function handleEditSaveButton(marker) {
     let nameError = false,
       categoryError = false;
 
@@ -213,8 +213,8 @@ const Map = ({ getMarkersRef, maps }) => {
     setInputErrors({ name: nameError, category: categoryError });
 
     if (nameError === false && categoryError === false) {
-      getMarkersRef()
-        .doc(id)
+      getMarkersRef(marker.map.id)
+        .doc(marker.id)
         .update({
           name: currentPopupContent.name,
           description: currentPopupContent.description,
@@ -318,7 +318,7 @@ const Map = ({ getMarkersRef, maps }) => {
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    handleDeleteButton(marker.id);
+                    handleDeleteButton(marker);
                   }}
                   type="button"
                   className="btn btn-danger m-1"
@@ -344,7 +344,7 @@ const Map = ({ getMarkersRef, maps }) => {
               onChange={handlePopupContentChange}
               addTag={addTag}
               deleteTag={deleteTag}
-              onEdit={() => handleEditSaveButton(marker.id)}
+              onEdit={() => handleEditSaveButton(marker)}
               editMode
               inputErrors={inputErrors}
             />
