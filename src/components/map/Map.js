@@ -8,14 +8,14 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import { DivIcon } from "leaflet";
+import { DivIcon, LatLngBounds } from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { useFirestore } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
-import MarkerCollection from "./MarkerCollection";
 import { categories } from "../../categories";
+import useMarkers from "../../hooks/useMarkers";
 
 const SearchField = () => {
   const leafletMap = useMap();
@@ -45,6 +45,42 @@ const InstantPopupMarker = (props) => {
   return <Marker ref={leafletRef} {...props} />;
 };
 
+const FitToBounds = ({ markers }) => {
+  const leafletMap = useMap();
+  const [centered, setCentered] = useState();
+
+  useEffect(() => {
+    if (!centered && markers.length) {
+      let minLat, minLong, maxLat, maxLong;
+      for (const marker of markers) {
+        const { _lat: lat, _long: long } = marker.position;
+        if (!minLat || lat < minLat) {
+          minLat = lat;
+        }
+        if (!minLong || long < minLong) {
+          minLong = long;
+        }
+        if (!maxLat || lat > maxLat) {
+          maxLat = lat;
+        }
+        if (!maxLong || long > maxLong) {
+          maxLong = long;
+        }
+      }
+      if (minLat && maxLat && minLong && maxLong) {
+        const newBounds = new LatLngBounds(
+          [maxLat, minLong],
+          [minLat, maxLong]
+        );
+        setCentered(true);
+        leafletMap.fitBounds(newBounds);
+      }
+    }
+  }, [centered, leafletMap, markers]);
+
+  return null;
+};
+
 const DEFAULT_POPUP_CONTENT = Object.freeze({
   name: "",
   description: "",
@@ -65,6 +101,7 @@ const Map = ({ getMarkersRef, maps }) => {
     DEFAULT_POPUP_CONTENT
   );
   const [editMode, setEditMode] = useState(false);
+  const { markers, mapsFetched } = useMarkers(maps);
 
   function resetPopupContent() {
     setCurrentPopupContent(DEFAULT_POPUP_CONTENT);
@@ -322,6 +359,10 @@ const Map = ({ getMarkersRef, maps }) => {
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />
         <MapEvents />
+        {maps.length === mapsFetched.length ? (
+          <FitToBounds markers={markers} />
+        ) : null}
+
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -347,14 +388,7 @@ const Map = ({ getMarkersRef, maps }) => {
             </div>
           </InstantPopupMarker>
         ) : null}
-        {maps.map((map) => (
-          <MarkerCollection
-            key={map.id}
-            map={map}
-            renderMarker={renderMarker}
-            singleMap={maps.length <= 1}
-          />
-        ))}
+        {markers.map((marker) => renderMarker(marker))}
       </MapContainer>
       <button onClick={testFunction}>test</button>
     </div>
