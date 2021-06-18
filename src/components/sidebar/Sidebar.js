@@ -4,7 +4,13 @@ import DescriptionForm from "./DescriptionForm";
 
 const Sidebar = ({ searchIndex, centerOnMarker, maps }) => {
   return (
-    <div style={{ width: "400px", height: "100vh", display: "inline-block" }}>
+    <div
+      style={{
+        width: "400px",
+        height: "100vh",
+        display: "inline-block",
+      }}
+    >
       <DescriptionForm maps={maps} />
       <SearchForm searchIndex={searchIndex} centerOnMarker={centerOnMarker} />
     </div>

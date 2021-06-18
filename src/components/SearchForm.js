@@ -9,7 +9,6 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
 
     if (e.target.value.length !== 0) {
       let result = searchIndex.search(e.target.value, { enrich: true });
-      console.log(result);
       let newResult = [];
 
       if (result.length === 0) {
@@ -27,19 +26,6 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
     } else {
       setMatchedIndexes([]);
     }
-
-    /*const allData = Object.values(searchIndex.store);
-
-    for (const marker of allData) {
-      if (
-        marker.tags.findIndex(
-          (item) => e.target.value.toLowerCase() === item.toLowerCase()
-        ) !== -1 &&
-        matchedIndexes.includes(marker) === false
-      ) {
-        setMatchedIndexes([...matchedIndexes, marker]);
-      }
-    }*/
   }
 
   return (
@@ -52,35 +38,40 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
           placeholder="Marker oder Tags suchen"
           value={searchInputValue}
           onChange={searchInputChange}
+          style={{ margin: "5px", width: "390px" }}
         />
       </div>
-      {matchedIndexes.map((object) => (
-        <div
-          key={object.id}
-          className="card"
-          style={{ width: "400px", cursor: "pointer" }}
-          onClick={() => centerOnMarker(object.position)}
-        >
-          <div className="card-body">
-            <h5 className="card-title">{object.name}</h5>
-            <h6 className="card-subtitle mb-2 text-muted">{object.category}</h6>
-            <p className="card-text">{object.description}</p>
-            <div>
-              {object.tags.map((tag) => (
-                <span
-                  key={tag}
-                  style={{ fontSize: "14px", margin: "1px" }}
-                  className="badge rounded-pill bg-light text-dark"
-                >
-                  <div style={{ display: "flex", flexDirection: "row" }}>
-                    {tag}
-                  </div>
-                </span>
-              ))}
+      <div>
+        {matchedIndexes.map((object) => (
+          <div
+            key={object.id}
+            className="card"
+            style={{ margin: "5px", width: "390px", cursor: "pointer" }}
+            onClick={() => centerOnMarker(object.position)}
+          >
+            <div className="card-body">
+              <h5 className="card-title">{object.name}</h5>
+              <h6 className="card-subtitle mb-2 text-muted">
+                {object.category}
+              </h6>
+              <p className="card-text">{object.description}</p>
+              <div>
+                {object.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    style={{ fontSize: "14px", margin: "1px" }}
+                    className="badge rounded-pill bg-light text-dark"
+                  >
+                    <div style={{ display: "flex", flexDirection: "row" }}>
+                      {tag}
+                    </div>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
