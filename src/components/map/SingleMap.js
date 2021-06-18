@@ -16,8 +16,6 @@ const SingleMap = () => {
 
   return map ? (
     <div>
-      <h2 className="my-3">{map.name}</h2>
-      {map.description ? <p className="mb-3">{map.description}</p> : null}
       <Map maps={map ? [map] : []} getMarkersRef={() => markersRef} />
     </div>
   ) : (
