@@ -8,15 +8,15 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import { DivIcon } from "leaflet";
+import { DivIcon, LatLngBounds } from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
 import { useFirestore } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
-import MarkerCollection from "./MarkerCollection";
 import Sidebar from "../sidebar/Sidebar";
 import { categories } from "../../categories";
+import useMarkers from "../../hooks/useMarkers";
 const { Document } = require("flexsearch");
 
 const searchIndex = new Document({
@@ -56,6 +56,42 @@ const InstantPopupMarker = (props) => {
   return <Marker ref={leafletRef} {...props} />;
 };
 
+const FitToBounds = ({ markers }) => {
+  const leafletMap = useMap();
+  const [centered, setCentered] = useState();
+
+  useEffect(() => {
+    if (!centered && markers.length) {
+      let minLat, minLong, maxLat, maxLong;
+      for (const marker of markers) {
+        const { _lat: lat, _long: long } = marker.position;
+        if (!minLat || lat < minLat) {
+          minLat = lat;
+        }
+        if (!minLong || long < minLong) {
+          minLong = long;
+        }
+        if (!maxLat || lat > maxLat) {
+          maxLat = lat;
+        }
+        if (!maxLong || long > maxLong) {
+          maxLong = long;
+        }
+      }
+      if (minLat && maxLat && minLong && maxLong) {
+        const newBounds = new LatLngBounds(
+          [maxLat, minLong],
+          [minLat, maxLong]
+        );
+        setCentered(true);
+        leafletMap.fitBounds(newBounds);
+      }
+    }
+  }, [centered, leafletMap, markers]);
+
+  return null;
+};
+
 const DEFAULT_POPUP_CONTENT = Object.freeze({
   name: "",
   description: "",
@@ -76,6 +112,7 @@ const Map = ({ getMarkersRef, maps }) => {
     DEFAULT_POPUP_CONTENT
   );
   const [editMode, setEditMode] = useState(false);
+  const { markers, mapsFetched } = useMarkers(maps);
 
   function resetPopupContent() {
     setCurrentPopupContent(DEFAULT_POPUP_CONTENT);
@@ -89,7 +126,6 @@ const Map = ({ getMarkersRef, maps }) => {
   function MapEvents() {
     useMapEvents({
       click: (e) => {
-        console.log(e);
         setNewMarker({
           id: Date.now(),
           lat: e.latlng.lat,
@@ -161,9 +197,9 @@ const Map = ({ getMarkersRef, maps }) => {
     setEditMode(true);
   }
 
-  function handleDeleteButton(id) {
-    getMarkersRef()
-      .doc(id)
+  function handleDeleteButton(marker) {
+    getMarkersRef(marker.map.id)
+      .doc(marker.id)
       .delete()
       .then((result) => {
         console.log("Marker deleted");
@@ -173,7 +209,7 @@ const Map = ({ getMarkersRef, maps }) => {
       });
   }
 
-  function handleEditSaveButton(id) {
+  function handleEditSaveButton(marker) {
     let nameError = false,
       categoryError = false;
 
@@ -188,8 +224,8 @@ const Map = ({ getMarkersRef, maps }) => {
     setInputErrors({ name: nameError, category: categoryError });
 
     if (nameError === false && categoryError === false) {
-      getMarkersRef()
-        .doc(id)
+      getMarkersRef(marker.map.id)
+        .doc(marker.id)
         .update({
           name: currentPopupContent.name,
           description: currentPopupContent.description,
@@ -293,7 +329,7 @@ const Map = ({ getMarkersRef, maps }) => {
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    handleDeleteButton(marker.id);
+                    handleDeleteButton(marker);
                   }}
                   type="button"
                   className="btn btn-danger m-1"
@@ -319,7 +355,7 @@ const Map = ({ getMarkersRef, maps }) => {
               onChange={handlePopupContentChange}
               addTag={addTag}
               deleteTag={deleteTag}
-              onEdit={() => handleEditSaveButton(marker.id)}
+              onEdit={() => handleEditSaveButton(marker)}
               editMode
               inputErrors={inputErrors}
             />
@@ -339,6 +375,10 @@ const Map = ({ getMarkersRef, maps }) => {
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />
         <MapEvents />
+        {maps.length === mapsFetched.length ? (
+          <FitToBounds markers={markers} />
+        ) : null}
+
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -364,15 +404,7 @@ const Map = ({ getMarkersRef, maps }) => {
             </div>
           </InstantPopupMarker>
         ) : null}
-        {maps.map((map) => (
-          <MarkerCollection
-            key={map.id}
-            map={map}
-            renderMarker={renderMarker}
-            singleMap={maps.length <= 1}
-            searchIndex={searchIndex}
-          />
-        ))}
+        {markers.map((marker) => renderMarker(marker))}
       </MapContainer>
     </div>
   );
