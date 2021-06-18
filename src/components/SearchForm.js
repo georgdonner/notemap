@@ -9,13 +9,18 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
 
     if (e.target.value.length !== 0) {
       let result = searchIndex.search(e.target.value, { enrich: true });
+      console.log(result);
       let newResult = [];
 
       if (result.length === 0) {
         setMatchedIndexes([]);
       } else {
-        for (const object of result[0].result) {
-          newResult.push(object.doc);
+        for (const fieldObject of result) {
+          for (const object of fieldObject.result) {
+            if (!newResult.includes(object.doc)) {
+              newResult.push(object.doc);
+            }
+          }
         }
         setMatchedIndexes(newResult);
       }
@@ -23,7 +28,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
       setMatchedIndexes([]);
     }
 
-    const allData = Object.values(searchIndex.store);
+    /*const allData = Object.values(searchIndex.store);
 
     for (const marker of allData) {
       if (
@@ -34,7 +39,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
       ) {
         setMatchedIndexes([...matchedIndexes, marker]);
       }
-    }
+    }*/
   }
 
   return (

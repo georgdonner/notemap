@@ -17,16 +17,6 @@ import MarkerForm from "./MarkerForm";
 import Sidebar from "../sidebar/Sidebar";
 import { categories } from "../../categories";
 import useMarkers from "../../hooks/useMarkers";
-const { Document } = require("flexsearch");
-
-const searchIndex = new Document({
-  preset: "performance",
-  tokenize: "full",
-  document: {
-    index: "name",
-    store: true,
-  },
-});
 
 const SearchField = () => {
   const leafletMap = useMap();
@@ -112,7 +102,7 @@ const Map = ({ getMarkersRef, maps }) => {
     DEFAULT_POPUP_CONTENT
   );
   const [editMode, setEditMode] = useState(false);
-  const { markers, mapsFetched } = useMarkers(maps);
+  const [{ markers, mapsFetched }, searchIndex] = useMarkers(maps);
 
   function resetPopupContent() {
     setCurrentPopupContent(DEFAULT_POPUP_CONTENT);

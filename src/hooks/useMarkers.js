@@ -1,5 +1,6 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { useFirestore } from "reactfire";
+const { Document } = require("flexsearch");
 
 function reducer(state, action) {
   switch (action.type) {
@@ -38,6 +39,20 @@ function useMarkers(maps) {
     markers: [],
     mapsFetched: [],
   });
+  const indexRef = useRef(
+    new Document({
+      preset: "performance",
+      tokenize: "full",
+      document: {
+        /*index: [
+          { field: "name", tokenize: "full" },
+          { field: "tags", tokenize: "forward" },
+        ]*/
+        index: ["name", "tags"],
+        store: true,
+      },
+    })
+  );
 
   useEffect(() => {
     const unsubscribers = [];
@@ -55,7 +70,13 @@ function useMarkers(maps) {
             };
             if (type === "added") {
               added.push(marker);
+              indexRef.current.add(marker);
             } else {
+              if (type === "modified") {
+                indexRef.current.add(marker);
+              } else {
+                indexRef.current.remove(marker.id);
+              }
               dispatch({ type, marker });
             }
           });
@@ -75,7 +96,7 @@ function useMarkers(maps) {
     };
   }, []); // eslint-disable-line
 
-  return state;
+  return [state, indexRef.current];
 }
 
 export default useMarkers;

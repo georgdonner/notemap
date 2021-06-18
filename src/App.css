@@ -1,5 +1,5 @@
 .leaflet-container{
-  width: calc(100vw - 419px);
+  width: calc(100vw - 400px);
   height: 100vh;
   display: inline-block;
   float: right;
