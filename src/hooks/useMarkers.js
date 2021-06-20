@@ -68,6 +68,10 @@ function useMarkers(maps) {
               id: doc.id,
               map,
             };
+            if (!marker.tags) {
+              marker.tags = [];
+            }
+
             if (type === "added") {
               added.push(marker);
               indexRef.current.add(marker);

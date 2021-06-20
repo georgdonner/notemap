@@ -2,15 +2,17 @@ import React, { useState } from "react";
 import { FaCog, FaUserPlus, FaPlus, FaTimes } from "react-icons/all";
 import { useHistory } from "react-router-dom";
 
-const DescriptionForm = ({ maps }) => {
+import SharedWith from "../common/SharedWith";
+
+const Description = ({ map }) => {
   const history = useHistory();
-  const members = Object.values(maps[0].members);
+  const members = map ? Object.values(map.members || {}) : [];
 
   const [addUser, setAddUser] = useState(false);
   const [addUserInputValue, setAddUserInputValue] = useState("");
 
   function editButton() {
-    history.push(maps[0].id + "/edit");
+    history.push(map.id + "/edit");
   }
 
   function toggleAddUser() {
@@ -26,46 +28,32 @@ const DescriptionForm = ({ maps }) => {
     console.log("Add user with E-Mail: ", addUserInputValue);
   }
 
-  return maps.length > 1 ? (
-    <div style={{ margin: "5px" }}>
-      <h2>Hauptkarte</h2>
-    </div>
+  return !map ? (
+    <h2>Hauptkarte</h2>
   ) : (
-    <div style={{ margin: "5px" }}>
-      <h2 className="my-3" style={{ display: "inline-block" }}>
-        {maps[0].name}
-      </h2>
-      <FaCog
-        style={{
-          display: "inline-block",
-          float: "right",
-          fontSize: "25px",
-          cursor: "pointer",
-        }}
-        onClick={() => {
-          editButton();
-        }}
-      />
-      <div style={{ display: "inline-block" }}>
-        {maps[0].description ? (
-          <p className="mb-3">{maps[0].description}</p>
-        ) : null}
-        {members.length === 0 ? (
-          <p>Mit noch keinem:keiner Freund:Freundin geteilt</p>
-        ) : null}
-        {members.length === 1 ? (
-          <p>Mit einem:einer Freund:Freundin geteilt</p>
-        ) : null}
-        {members.length > 1 ? (
-          <p>Mit {members.length} Freund:innen geteilt</p>
-        ) : null}
+    <>
+      <div className="mb-3 d-flex justify-content-between align-items-center">
+        <h2 className="mb-0">{map.name}</h2>
+        <FaCog
+          style={{
+            fontSize: "25px",
+            cursor: "pointer",
+          }}
+          onClick={editButton}
+        />
       </div>
-      <FaUserPlus
-        style={{ marginLeft: "10px", marginBottom: "5px", cursor: "pointer" }}
-        onClick={() => {
-          toggleAddUser();
-        }}
-      />
+      {map.description ? <p className="mb-3">{map.description}</p> : null}
+      <div>
+        <SharedWith
+          members={members}
+          emptyState="Mit niemand geteilt"
+          className="d-inline-block m-0"
+        />
+        <FaUserPlus
+          style={{ marginLeft: "10px", marginBottom: "5px", cursor: "pointer" }}
+          onClick={toggleAddUser}
+        />
+      </div>
       {addUser ? (
         <div className="input-group mb-3">
           <input
@@ -95,8 +83,8 @@ const DescriptionForm = ({ maps }) => {
           </span>
         </div>
       ) : null}
-    </div>
+    </>
   );
 };
 
-export default DescriptionForm;
+export default Description;

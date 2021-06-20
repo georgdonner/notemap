@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+import { categories } from "../../categories";
+
 const SearchForm = ({ searchIndex, centerOnMarker }) => {
   const [matchedIndexes, setMatchedIndexes] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
@@ -29,7 +31,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
   }
 
   return (
-    <div>
+    <div className="mt-3">
       <div>
         <input
           className="form-control"
@@ -38,7 +40,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
           placeholder="Marker oder Tags suchen"
           value={searchInputValue}
           onChange={searchInputChange}
-          style={{ margin: "5px", width: "390px" }}
+          style={{ width: "100%" }}
         />
       </div>
       <div>
@@ -46,13 +48,13 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
           <div
             key={object.id}
             className="card"
-            style={{ margin: "5px", width: "390px", cursor: "pointer" }}
+            style={{ width: "100%", cursor: "pointer" }}
             onClick={() => centerOnMarker(object.position)}
           >
             <div className="card-body">
               <h5 className="card-title">{object.name}</h5>
               <h6 className="card-subtitle mb-2 text-muted">
-                {object.category}
+                {categories.find((ctg) => ctg.key === object.category)?.name}
               </h6>
               <p className="card-text">{object.description}</p>
               <div>

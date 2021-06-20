@@ -360,7 +360,7 @@ const Map = ({ getMarkersRef, maps }) => {
       <Sidebar
         searchIndex={searchIndex}
         centerOnMarker={centerOnMarker}
-        maps={maps}
+        map={maps.length === 1 ? maps[0] : null}
       />
       <MapContainer center={[51.505, -0.09]} zoom={13}>
         <SearchField />

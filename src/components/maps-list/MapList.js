@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import tinycolor from "tinycolor2";
 import styled from "styled-components";
 
+import SharedWith from "../common/SharedWith";
+
 const lightenColor = (hex, amount = 0.99) => {
   const hsl = tinycolor(hex).toHsl();
   hsl.l = amount;
@@ -13,32 +15,6 @@ const cardBackground = (hex) => {
   const bgColor = lightenColor(hex);
   const stripesColor = lightenColor(hex, 0.975);
   return `repeating-linear-gradient(-45deg, ${bgColor}, ${bgColor} 20px, ${stripesColor} 20px, ${stripesColor} 25px)`;
-};
-
-const SharedWith = ({ members }) => {
-  const memberNames = Object.values(members).map((member) => member.name);
-  if (!memberNames.length) {
-    return null;
-  }
-
-  if (memberNames.length > 3) {
-    return (
-      <p className="fs-5 mt-3 mb-0">
-        Geteilt mit {memberNames.length} Freund:innen
-      </p>
-    );
-  }
-
-  let membersString = "";
-  if (memberNames.length > 2) {
-    membersString = `${memberNames.slice(0, -1).join(", ")} und ${
-      memberNames[memberNames.length - 1]
-    }`;
-  } else {
-    membersString = memberNames.join(" und ");
-  }
-
-  return <p className="fs-5 mt-3 mb-0">Geteilt mit {membersString}</p>;
 };
 
 const MapCardWrapper = styled.div`
@@ -64,7 +40,9 @@ const MapCard = ({ map, owned }) => (
       <p className="fs-5 mt-3 mb-0">
         {map.markerCount || 0} Markierung{map.markerCount !== 1 ? "en" : ""}
       </p>
-      {owned && map.members ? <SharedWith members={map.members} /> : null}
+      {owned ? (
+        <SharedWith className="fs-5 mt-3 mb-0" members={map.members} />
+      ) : null}
       {!owned ? (
         <p className="fs-5 mt-3 mb-0">Geteilte Karte von {map.owner.name}</p>
       ) : null}

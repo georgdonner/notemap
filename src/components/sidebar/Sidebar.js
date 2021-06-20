@@ -1,17 +1,18 @@
 import React from "react";
-import SearchForm from "../SearchForm";
-import DescriptionForm from "./DescriptionForm";
+import SearchForm from "./SearchForm";
+import Description from "./Description";
 
-const Sidebar = ({ searchIndex, centerOnMarker, maps }) => {
+const Sidebar = ({ searchIndex, centerOnMarker, map }) => {
   return (
     <div
       style={{
         width: "400px",
         height: "100vh",
-        display: "inline-block",
+        overflowY: "scroll",
       }}
+      className="d-inline-block p-3"
     >
-      <DescriptionForm maps={maps} />
+      <Description map={map} />
       <SearchForm searchIndex={searchIndex} centerOnMarker={centerOnMarker} />
     </div>
   );
