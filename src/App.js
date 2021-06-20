@@ -1,6 +1,7 @@
+import { useEffect } from "react";
 import { FirebaseAppProvider } from "reactfire";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
-import { useSigninCheck } from "reactfire";
+import { useSigninCheck, useFirestore } from "reactfire";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
@@ -34,6 +35,22 @@ function App() {
 function MainRouter() {
   const { status, data: signInCheckResult } = useSigninCheck();
   const isAuthenticated = signInCheckResult?.signedIn;
+
+  const firestore = useFirestore();
+
+  useEffect(() => {
+    try {
+      firestore.enablePersistence();
+    } catch (error) {
+      let message = "Firebase offline mode not enabled.";
+      if (error.code === "failed-precondition") {
+        message += " Can only be enabled in one tab at a time";
+      } else if (error.code === "unimplemented") {
+        message += " Browser does not support all of the required features";
+      }
+      console.warn(message);
+    }
+  }, [firestore]);
 
   return status === "loading" ? (
     <div
