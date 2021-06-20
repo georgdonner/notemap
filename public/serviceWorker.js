@@ -28,6 +28,7 @@ self.addEventListener("activate", (e) => {
 });
 
 const isLocal = (url) => url.origin === self.location.origin;
+const isOSM = (url) => url.origin.match(/openstreetmap.de/);
 
 // Cache all local resources (index.html, bundled CSS & JS) with a network first strategy
 workbox.routing.registerRoute(
@@ -78,6 +79,7 @@ workbox.routing.registerRoute(
 workbox.routing.registerRoute(
   ({ request, url }) =>
     !isLocal(url) &&
+    !isOSM(url) &&
     (request.destination === "script" || request.destination === "style"),
   new workbox.strategies.StaleWhileRevalidate({
     cacheName: cacheMap.externalStatic,

@@ -8,11 +8,10 @@ import App from "./App";
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("./serviceWorker.js")
-      .catch(function (err) {
-        console.log("Service worker registration failed", err);
-      });
+    const sw = `${window.location.origin}/serviceWorker.js`;
+    navigator.serviceWorker.register(sw).catch(function (err) {
+      console.log("Service worker registration failed", err);
+    });
   });
 }
 
