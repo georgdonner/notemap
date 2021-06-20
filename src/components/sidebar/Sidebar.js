@@ -9,6 +9,9 @@ const Sidebar = ({ searchIndex, centerOnMarker, map }) => {
         width: "400px",
         height: "100vh",
         overflowY: "scroll",
+        boxShadow: "0 0 20px rgba(0, 0, 0, 0.3)",
+        zIndex: 1000,
+        position: "relative",
       }}
       className="d-inline-block p-3"
     >
