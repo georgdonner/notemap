@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FirebaseAppProvider } from "reactfire";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
-import { useSigninCheck, useFirestore } from "reactfire";
+import { useSigninCheck, useFirestore, useMessaging } from "reactfire";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
@@ -24,11 +24,50 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-function App() {
-  return (
-    <FirebaseAppProvider firebaseConfig={firebaseConfig}>
-      <MainRouter />
-    </FirebaseAppProvider>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    const sw = `${process.env.PUBLIC_URL}/serviceWorker.js`;
+    navigator.serviceWorker.register(sw).catch(function (err) {
+      console.log("Service worker registration failed", err);
+    });
+  });
+}
+
+function PushMessaging() {
+  const messaging = useMessaging();
+
+  const [token, setToken] = useState(false);
+
+  useEffect(() => {
+    const getToken = async () => {
+      if ("serviceWorker" in navigator) {
+        try {
+          const serviceWorkerRegistration = await navigator.serviceWorker.ready;
+          const currentToken = await messaging.getToken({
+            vapidKey: process.env.REACT_APP_FCM_PUSH_KEY,
+            serviceWorkerRegistration,
+          });
+          if (!currentToken) {
+            throw new Error("No token received");
+          }
+          setToken(currentToken);
+        } catch (error) {
+          console.log("Could not get FCM messaging token", error);
+        }
+      }
+    };
+
+    messaging.onMessage((payload) => {
+      console.log(payload);
+    });
+
+    getToken();
+  }, [messaging]);
+
+  return token ? (
+    <h1> Notification permission enabled 👍🏻 </h1>
+  ) : (
+    <h1> Need notification permission ❗️ </h1>
   );
 }
 
@@ -89,6 +128,15 @@ function MainRouter() {
         </Switch>
       </div>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <FirebaseAppProvider firebaseConfig={firebaseConfig}>
+      <MainRouter />
+      <PushMessaging />
+    </FirebaseAppProvider>
   );
 }
 
