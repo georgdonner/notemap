@@ -36,3 +36,7 @@
 .textAreaDescription {
   resize: none;
 }
+
+.toast {
+  background-color: white;
+}

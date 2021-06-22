@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FirebaseAppProvider } from "reactfire";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
 import { useSigninCheck, useFirestore, useMessaging } from "reactfire";
+import { Toast, ToastContainer } from "react-bootstrap";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
@@ -37,6 +38,8 @@ function PushMessaging() {
   const messaging = useMessaging();
 
   const [token, setToken] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [notification, setNotification] = useState();
 
   useEffect(() => {
     const getToken = async () => {
@@ -57,17 +60,44 @@ function PushMessaging() {
       }
     };
 
-    messaging.onMessage((payload) => {
+    getToken();
+
+    const unsubscribe = messaging.onMessage((payload) => {
       console.log(payload);
+      setNotification(payload.notification);
+      setShowToast(true);
     });
 
-    getToken();
+    return () => {
+      unsubscribe();
+    };
   }, [messaging]);
 
-  return token ? (
-    <h1> Notification permission enabled 👍🏻 </h1>
-  ) : (
-    <h1> Need notification permission ❗️ </h1>
+  console.log("token", token);
+  console.log("notification", notification);
+  console.log("show toast", showToast);
+
+  if (!token || !notification) {
+    return null;
+  }
+
+  return (
+    <ToastContainer position="top-end">
+      <Toast show={showToast} onClose={() => setShowToast(false)}>
+        <Toast.Header>
+          {notification.image ? (
+            <img
+              src={notification.image}
+              className="rounded me-2"
+              alt=""
+              style={{ maxWidth: "100px" }}
+            />
+          ) : null}
+          <strong className="me-auto">{notification.title}</strong>
+        </Toast.Header>
+        <Toast.Body>{notification.body}</Toast.Body>
+      </Toast>
+    </ToastContainer>
   );
 }
 
