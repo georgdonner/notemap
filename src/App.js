@@ -34,14 +34,20 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-function PushMessaging() {
+function PushMessaging({ user }) {
   const messaging = useMessaging();
+  const firestore = useFirestore();
+  const { FieldValue } = useFirestore;
 
   const [token, setToken] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [notification, setNotification] = useState();
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+
     const getToken = async () => {
       if ("serviceWorker" in navigator) {
         try {
@@ -53,6 +59,14 @@ function PushMessaging() {
           if (!currentToken) {
             throw new Error("No token received");
           }
+
+          firestore
+            .collection("users")
+            .doc(user.uid)
+            .update({
+              messagingTokens: FieldValue.arrayUnion(currentToken),
+            });
+
           setToken(currentToken);
         } catch (error) {
           console.log("Could not get FCM messaging token", error);
@@ -63,7 +77,6 @@ function PushMessaging() {
     getToken();
 
     const unsubscribe = messaging.onMessage((payload) => {
-      console.log(payload);
       setNotification(payload.notification);
       setShowToast(true);
     });
@@ -71,11 +84,7 @@ function PushMessaging() {
     return () => {
       unsubscribe();
     };
-  }, [messaging]);
-
-  console.log("token", token);
-  console.log("notification", notification);
-  console.log("show toast", showToast);
+  }, [messaging, firestore, FieldValue, user]);
 
   if (!token || !notification) {
     return null;
@@ -132,6 +141,7 @@ function MainRouter() {
     </div>
   ) : (
     <Router>
+      <PushMessaging user={signInCheckResult.user} />
       <div className="App">
         <Switch>
           <PublicRoute path="/login" isAuthenticated={isAuthenticated}>
@@ -165,7 +175,6 @@ function App() {
   return (
     <FirebaseAppProvider firebaseConfig={firebaseConfig}>
       <MainRouter />
-      <PushMessaging />
     </FirebaseAppProvider>
   );
 }
