@@ -29,9 +29,17 @@ const Description = ({ map }) => {
   }
 
   return !map ? (
-    <h2>Hauptkarte</h2>
+    <h2
+      style={{ position: "sticky", top: 0, zIndex: 10, background: "white" }}
+      className="p-3"
+    >
+      Hauptkarte
+    </h2>
   ) : (
-    <>
+    <div
+      style={{ position: "sticky", top: 0, zIndex: 10, background: "white" }}
+      className="p-3"
+    >
       <div className="mb-3 d-flex justify-content-between align-items-center">
         <h2 className="mb-0">{map.name}</h2>
         <FaCog
@@ -83,7 +91,7 @@ const Description = ({ map }) => {
           </span>
         </div>
       ) : null}
-    </>
+    </div>
   );
 };
 

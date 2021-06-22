@@ -369,7 +369,7 @@ const Map = ({ getMarkersRef, maps }) => {
   }
 
   return (
-    <div>
+    <div className="d-flex">
       <Sidebar
         searchIndex={searchIndex}
         centerOnMarker={centerOnMarker}

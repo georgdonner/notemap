@@ -6,14 +6,12 @@ const Sidebar = ({ searchIndex, centerOnMarker, map }) => {
   return (
     <div
       style={{
-        width: "400px",
         height: "100vh",
-        overflowY: "scroll",
         boxShadow: "0 0 20px rgba(0, 0, 0, 0.3)",
-        zIndex: 1000,
-        position: "relative",
+        overflowY: "scroll",
+        flex: 1,
       }}
-      className="d-inline-block p-3"
+      className="d-inline-block"
     >
       <Description map={map} />
       <SearchForm searchIndex={searchIndex} centerOnMarker={centerOnMarker} />
