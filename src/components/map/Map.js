@@ -46,6 +46,16 @@ const InstantPopupMarker = (props) => {
   return <Marker ref={leafletRef} {...props} />;
 };
 
+const CenterMap = ({ centerPosition }) => {
+  const leafletMap = useMap();
+
+  useEffect(() => {
+    leafletMap.setView(centerPosition, 16);
+  }, [centerPosition, leafletMap]);
+
+  return null;
+};
+
 const FitToBounds = ({ markers }) => {
   const leafletMap = useMap();
   const [centered, setCentered] = useState();
@@ -102,6 +112,7 @@ const Map = ({ getMarkersRef, maps }) => {
     DEFAULT_POPUP_CONTENT
   );
   const [editMode, setEditMode] = useState(false);
+  const [centerPosition, setCenterPosition] = useState([51.341971, 12.37409]);
   const [{ markers, mapsFetched }, searchIndex] = useMarkers(maps);
 
   function resetPopupContent() {
@@ -253,7 +264,7 @@ const Map = ({ getMarkersRef, maps }) => {
   }
 
   function centerOnMarker(position) {
-    console.log(position);
+    setCenterPosition([position._lat, position._long]);
   }
 
   function renderMarker(marker) {
@@ -362,7 +373,8 @@ const Map = ({ getMarkersRef, maps }) => {
         centerOnMarker={centerOnMarker}
         map={maps.length === 1 ? maps[0] : null}
       />
-      <MapContainer center={[51.505, -0.09]} zoom={13}>
+      <MapContainer center={[51.341971, 12.37409]} zoom={13}>
+        <CenterMap centerPosition={centerPosition} />
         <SearchField />
         <MapEvents />
         {maps.length === mapsFetched.length ? (
