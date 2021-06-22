@@ -11,7 +11,7 @@ import {
 import { DivIcon, LatLngBounds } from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
-import { useFirestore } from "reactfire";
+import { useFirestore, useUser } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
 import { categories } from "../../categories";
@@ -91,6 +91,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
 
 const Map = ({ getMarkersRef, maps }) => {
   const { GeoPoint } = useFirestore;
+  const { data: user } = useUser();
 
   const [inputErrors, setInputErrors] = useState({
     name: false,
@@ -155,6 +156,7 @@ const Map = ({ getMarkersRef, maps }) => {
           description: currentPopupContent.description,
           category: currentPopupContent.category,
           tags: currentPopupContent.tags,
+          user: user.uid,
         })
         .then((result) => {
           console.log("Marker added");

@@ -40,3 +40,7 @@
 .toast {
   background-color: white;
 }
+.toast-container {
+  position: fixed !important;
+  z-index: 1000;
+}
