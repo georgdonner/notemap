@@ -99,43 +99,36 @@ async function notifyMarkerAdded(mapId, marker) {
 
   const addedBy = members[marker.user]?.name || "Jemand";
 
-  const payload = {
+  const message = {
     notification: {
-      title: `${addedBy} hat einen Marker zu deiner Karte hinzugefügt!`,
+      title: "Neuer Marker",
       body: `${addedBy} hat deiner Karte "${mapName}" den Marker ${marker.name} hinzugefügt.`,
     },
+    webpush: {
+      fcmOptions: {
+        link: `map/${mapId}`,
+      },
+    },
+    tokens: messagingTokens,
   };
 
   // Send notifications to all tokens.
-  const response = await admin
-    .messaging()
-    .sendToDevice(messagingTokens, payload);
+  const response = await admin.messaging().sendMulticast(message);
 
   // For each message check if there was an error.
-  const tokensToRemove = [];
-
-  response.results.forEach((result, index) => {
-    const error = result.error;
-    if (error) {
-      functions.logger.error(
-        "Failure sending notification to",
-        messagingTokens[index],
-        error
-      );
-      // Cleanup the tokens who are not registered anymore.
-      if (
-        error.code === "messaging/invalid-registration-token" ||
-        error.code === "messaging/registration-token-not-registered"
-      ) {
-        tokensToRemove.push(messagingTokens[index]);
+  if (response.failureCount > 0) {
+    const failedTokens = [];
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        failedTokens.push(messagingTokens[idx]);
       }
-    }
-  });
-
-  if (tokensToRemove.length > 0) {
-    return db.doc(`users/${owner.id}`).update({
-      messagingTokens: admin.firestore.FieldValue.arrayRemove(tokensToRemove),
     });
+
+    if (failedTokens.length > 0) {
+      return db.doc(`users/${owner.id}`).update({
+        messagingTokens: admin.firestore.FieldValue.arrayRemove(failedTokens),
+      });
+    }
   }
 }
 
