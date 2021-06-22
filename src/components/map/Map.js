@@ -50,7 +50,9 @@ const CenterMap = ({ centerPosition }) => {
   const leafletMap = useMap();
 
   useEffect(() => {
-    leafletMap.setView(centerPosition, 16);
+    if (centerPosition !== null) {
+      leafletMap.setView(centerPosition, 16);
+    }
   }, [centerPosition, leafletMap]);
 
   return null;
@@ -112,7 +114,7 @@ const Map = ({ getMarkersRef, maps }) => {
     DEFAULT_POPUP_CONTENT
   );
   const [editMode, setEditMode] = useState(false);
-  const [centerPosition, setCenterPosition] = useState([51.341971, 12.37409]);
+  const [centerPosition, setCenterPosition] = useState(null);
   const [{ markers, mapsFetched }, searchIndex] = useMarkers(maps);
 
   function resetPopupContent() {
