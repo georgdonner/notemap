@@ -2,6 +2,7 @@
   width: calc(100vw - 400px);
   height: 100vh;
   display: inline-block;
+  flex: 1;
 }
 .marker-pin {
   width: 30px;

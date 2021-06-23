@@ -12,6 +12,7 @@ import MainMap from "./components/map/MainMap";
 import SingleMap from "./components/map/SingleMap";
 import LoginForm from "./components/auth/LoginForm";
 import SignupForm from "./components/auth/SignupForm";
+import NavbarComp from "./components/common/NavbarComp";
 import "./App.css";
 
 const firebaseProjectId = process.env.REACT_APP_FIREBASE_PROJECT_ID;
@@ -114,6 +115,8 @@ function MainRouter() {
   const { status, data: signInCheckResult } = useSigninCheck();
   const isAuthenticated = signInCheckResult?.signedIn;
 
+  const [sidebar, setSidebar] = useState(false);
+
   const firestore = useFirestore();
 
   useEffect(() => {
@@ -141,6 +144,7 @@ function MainRouter() {
     </div>
   ) : (
     <Router>
+      <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
       <PushMessaging user={signInCheckResult.user} />
       <div className="App">
         <Switch>
@@ -154,13 +158,13 @@ function MainRouter() {
             <MapForm />
           </PrivateRoute>
           <PrivateRoute path="/main-map" isAuthenticated={isAuthenticated}>
-            <MainMap />
+            <MainMap sidebar={sidebar} setSidebar={setSidebar} />
           </PrivateRoute>
           <PrivateRoute path="/map/:id/edit" isAuthenticated={isAuthenticated}>
             <MapForm />
           </PrivateRoute>
           <PrivateRoute path="/map/:id" isAuthenticated={isAuthenticated}>
-            <SingleMap />
+            <SingleMap sidebar={sidebar} setSidebar={setSidebar} />
           </PrivateRoute>
           <PrivateRoute path="/" isAuthenticated={isAuthenticated}>
             <MapList />

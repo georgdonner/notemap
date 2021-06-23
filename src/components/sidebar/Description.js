@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 
 import SharedWith from "../common/SharedWith";
 
-const Description = ({ map }) => {
+const Description = ({ map, sidebar, setSidebar }) => {
   const history = useHistory();
   const members = map ? Object.values(map.members || {}) : [];
 
@@ -28,6 +28,10 @@ const Description = ({ map }) => {
     console.log("Add user with E-Mail: ", addUserInputValue);
   }
 
+  function closeSidebar() {
+    setSidebar(false);
+  }
+
   return !map ? (
     <h2
       style={{ position: "sticky", top: 0, zIndex: 10, background: "white" }}
@@ -42,13 +46,23 @@ const Description = ({ map }) => {
     >
       <div className="mb-3 d-flex justify-content-between align-items-center">
         <h2 className="mb-0">{map.name}</h2>
-        <FaCog
-          style={{
-            fontSize: "25px",
-            cursor: "pointer",
-          }}
-          onClick={editButton}
-        />
+        <div className="justify-content-end">
+          <FaCog
+            style={{
+              fontSize: "25px",
+              cursor: "pointer",
+            }}
+            onClick={editButton}
+          />
+          <FaTimes
+            style={{
+              fontSize: "25px",
+              cursor: "pointer",
+              paddingLeft: "5px",
+            }}
+            onClick={closeSidebar}
+          />
+        </div>
       </div>
       {map.description ? <p className="mb-3">{map.description}</p> : null}
       <div>

@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 
 import Map from "./Map";
 
-const SingleMap = () => {
+const SingleMap = ({ sidebar, setSidebar }) => {
   const { id } = useParams();
   const firestore = useFirestore();
 
@@ -16,7 +16,12 @@ const SingleMap = () => {
 
   return map ? (
     <div>
-      <Map singleMap={map} getMarkersRef={() => markersRef} />
+      <Map
+        singleMap={map}
+        getMarkersRef={() => markersRef}
+        sidebar={sidebar}
+        setSidebar={setSidebar}
+      />
     </div>
   ) : (
     <div
