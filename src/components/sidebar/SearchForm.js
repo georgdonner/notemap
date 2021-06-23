@@ -66,7 +66,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
             key={object.id}
             className="card"
             style={{ width: "100%", cursor: "pointer" }}
-            onClick={() => centerOnMarker(object.position)}
+            onClick={() => centerOnMarker(object)}
           >
             <div className="card-body">
               <h5 className="card-title">{object.name}</h5>

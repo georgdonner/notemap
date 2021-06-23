@@ -36,7 +36,7 @@ const Map = ({ getMarkersRef, maps }) => {
     DEFAULT_POPUP_CONTENT
   );
   const [editMode, setEditMode] = useState(false);
-  const [centerPosition, setCenterPosition] = useState(null);
+  const [centerMarker, setCenterMarker] = useState(null);
   const [{ markers, mapsFetched }, searchIndex] = useMarkers(maps);
 
   function resetPopupContent() {
@@ -59,10 +59,12 @@ const Map = ({ getMarkersRef, maps }) => {
           description: currentPopupContent.description,
           category: currentPopupContent.category,
         });
+        setCenterMarker(null);
       },
       popupclose: (e) => {
         setEditMode(false);
         resetPopupContent();
+        setCenterMarker(null);
       },
     });
 
@@ -188,8 +190,8 @@ const Map = ({ getMarkersRef, maps }) => {
     });
   }
 
-  function centerOnMarker(position) {
-    setCenterPosition([position._lat, position._long]);
+  function centerOnMarker(marker) {
+    setCenterMarker(marker);
   }
 
   return (
@@ -200,7 +202,13 @@ const Map = ({ getMarkersRef, maps }) => {
         map={maps.length === 1 ? maps[0] : null}
       />
       <MapContainer center={[51.341971, 12.37409]} zoom={13}>
-        <CenterMap centerPosition={centerPosition} />
+        <CenterMap
+          centerPosition={
+            centerMarker
+              ? [centerMarker.position._lat, centerMarker.position._long]
+              : null
+          }
+        />
         <SearchField />
         <MapEvents />
         {maps.length === mapsFetched.length ? (
@@ -233,7 +241,11 @@ const Map = ({ getMarkersRef, maps }) => {
           </InstantPopupMarker>
         ) : null}
         {markers.map((marker) => (
-          <Marker key={marker.id} marker={marker}>
+          <Marker
+            key={marker.id}
+            marker={marker}
+            center={centerMarker?.id === marker.id}
+          >
             <Popup closeOnClick={false}>
               {!editMode ? (
                 <MarkerContent

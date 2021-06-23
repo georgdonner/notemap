@@ -2,17 +2,20 @@ import { renderToString } from "react-dom/server";
 import { DivIcon } from "leaflet";
 import { Marker as LeafletMarker } from "react-leaflet";
 
+import { InstantPopupMarker } from "./LeafletChildren";
 import { categories } from "../../categories";
 
-const Marker = ({ marker, children }) => {
+const Marker = ({ marker, center = false, children }) => {
   if (!marker) {
     return null;
   }
 
   const category = categories.find((ctg) => ctg.key === marker.category);
 
+  const MarkerComponent = center ? InstantPopupMarker : LeafletMarker;
+
   return (
-    <LeafletMarker
+    <MarkerComponent
       position={[marker.position._lat, marker.position._long]}
       icon={
         new DivIcon({
@@ -32,7 +35,7 @@ const Marker = ({ marker, children }) => {
       }
     >
       {children}
-    </LeafletMarker>
+    </MarkerComponent>
   );
 };
 

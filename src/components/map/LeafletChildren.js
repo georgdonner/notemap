@@ -23,20 +23,26 @@ export const SearchField = () => {
   return null;
 };
 
-export const InstantPopupMarker = (props) => {
+export const InstantPopupMarker = ({ children, ...props }) => {
   const leafletRef = useRef();
   useEffect(() => {
     leafletRef.current.openPopup();
   }, []);
-  return <Marker ref={leafletRef} {...props} />;
+  return (
+    <Marker ref={leafletRef} {...props}>
+      {children}
+    </Marker>
+  );
 };
 
 export const CenterMap = ({ centerPosition }) => {
   const leafletMap = useMap();
 
   useEffect(() => {
-    if (centerPosition !== null) {
-      leafletMap.setView(centerPosition, 16);
+    if (centerPosition) {
+      const currentZoom = leafletMap.getZoom();
+      const targetZoom = Math.max(currentZoom, 16);
+      leafletMap.setView(centerPosition, targetZoom);
     }
   }, [centerPosition, leafletMap]);
 
