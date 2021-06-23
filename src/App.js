@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { FirebaseAppProvider } from "reactfire";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
-import { useSigninCheck } from "reactfire";
+import { useSigninCheck, useFirestore, useMessaging } from "reactfire";
+import { Toast, ToastContainer } from "react-bootstrap";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
@@ -23,17 +25,110 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
-function App() {
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    const sw = `${process.env.PUBLIC_URL}/serviceWorker.js`;
+    navigator.serviceWorker.register(sw).catch(function (err) {
+      console.log("Service worker registration failed", err);
+    });
+  });
+}
+
+function PushMessaging({ user }) {
+  const messaging = useMessaging();
+  const firestore = useFirestore();
+  const { FieldValue } = useFirestore;
+
+  const [token, setToken] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [notification, setNotification] = useState();
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const getToken = async () => {
+      if ("serviceWorker" in navigator) {
+        try {
+          const serviceWorkerRegistration = await navigator.serviceWorker.ready;
+          const currentToken = await messaging.getToken({
+            vapidKey: process.env.REACT_APP_FCM_PUSH_KEY,
+            serviceWorkerRegistration,
+          });
+          if (!currentToken) {
+            throw new Error("No token received");
+          }
+
+          firestore
+            .collection("users")
+            .doc(user.uid)
+            .update({
+              messagingTokens: FieldValue.arrayUnion(currentToken),
+            });
+
+          setToken(currentToken);
+        } catch (error) {
+          console.log("Could not get FCM messaging token", error);
+        }
+      }
+    };
+
+    getToken();
+
+    const unsubscribe = messaging.onMessage((payload) => {
+      setNotification(payload.notification);
+      setShowToast(true);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [messaging, firestore, FieldValue, user]);
+
+  if (!token || !notification) {
+    return null;
+  }
+
   return (
-    <FirebaseAppProvider firebaseConfig={firebaseConfig}>
-      <MainRouter />
-    </FirebaseAppProvider>
+    <ToastContainer position="top-end">
+      <Toast show={showToast} onClose={() => setShowToast(false)}>
+        <Toast.Header>
+          {notification.image ? (
+            <img
+              src={notification.image}
+              className="rounded me-2"
+              alt=""
+              style={{ maxWidth: "100px" }}
+            />
+          ) : null}
+          <strong className="me-auto">{notification.title}</strong>
+        </Toast.Header>
+        <Toast.Body>{notification.body}</Toast.Body>
+      </Toast>
+    </ToastContainer>
   );
 }
 
 function MainRouter() {
   const { status, data: signInCheckResult } = useSigninCheck();
   const isAuthenticated = signInCheckResult?.signedIn;
+
+  const firestore = useFirestore();
+
+  useEffect(() => {
+    try {
+      firestore.enablePersistence();
+    } catch (error) {
+      let message = "Firebase offline mode not enabled.";
+      if (error.code === "failed-precondition") {
+        message += " Can only be enabled in one tab at a time";
+      } else if (error.code === "unimplemented") {
+        message += " Browser does not support all of the required features";
+      }
+      console.warn(message);
+    }
+  }, [firestore]);
 
   return status === "loading" ? (
     <div
@@ -46,6 +141,7 @@ function MainRouter() {
     </div>
   ) : (
     <Router>
+      <PushMessaging user={signInCheckResult.user} />
       <div className="App">
         <Switch>
           <PublicRoute path="/login" isAuthenticated={isAuthenticated}>
@@ -72,6 +168,14 @@ function MainRouter() {
         </Switch>
       </div>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <FirebaseAppProvider firebaseConfig={firebaseConfig}>
+      <MainRouter />
+    </FirebaseAppProvider>
   );
 }
 

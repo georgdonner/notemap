@@ -11,7 +11,7 @@ import {
 import { DivIcon, LatLngBounds } from "leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import "leaflet-geosearch/dist/geosearch.css";
-import { useFirestore } from "reactfire";
+import { useFirestore, useUser } from "reactfire";
 
 import MarkerForm from "./MarkerForm";
 import Sidebar from "../sidebar/Sidebar";
@@ -104,6 +104,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
 
 const Map = ({ getMarkersRef, maps }) => {
   const { GeoPoint } = useFirestore;
+  const { data: user } = useUser();
 
   const [inputErrors, setInputErrors] = useState({
     name: false,
@@ -169,6 +170,7 @@ const Map = ({ getMarkersRef, maps }) => {
           description: currentPopupContent.description,
           category: currentPopupContent.category,
           tags: currentPopupContent.tags,
+          user: user.uid,
         })
         .then((result) => {
           console.log("Marker added");
@@ -385,7 +387,7 @@ const Map = ({ getMarkersRef, maps }) => {
 
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url="https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png"
         />
         {newMarker ? (
           <InstantPopupMarker position={[newMarker.lat, newMarker.lng]}>

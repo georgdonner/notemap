@@ -2,7 +2,6 @@
   width: calc(100vw - 400px);
   height: 100vh;
   display: inline-block;
-  float: right;
 }
 .marker-pin {
   width: 30px;
@@ -39,3 +38,10 @@
   resize: none;
 }
 
+.toast {
+  background-color: white;
+}
+.toast-container {
+  position: fixed !important;
+  z-index: 1000;
+}

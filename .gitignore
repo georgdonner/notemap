@@ -11,6 +11,9 @@
 # production
 /build
 
+# build service worker
+/public/serviceWorker.js
+
 # misc
 .DS_Store
 .env.local
