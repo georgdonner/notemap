@@ -1,98 +1,19 @@
-import React, { useEffect, useState, useRef } from "react";
-import { renderToString } from "react-dom/server";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
-import { DivIcon, LatLngBounds } from "leaflet";
-import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
+import React, { useState } from "react";
+import { MapContainer, TileLayer, Popup, useMapEvents } from "react-leaflet";
 import "leaflet-geosearch/dist/geosearch.css";
 import { useFirestore, useUser } from "reactfire";
 
+import Marker from "./Marker";
 import MarkerForm from "./MarkerForm";
+import MarkerContent from "./MarkerContent";
+import {
+  SearchField,
+  InstantPopupMarker,
+  CenterMap,
+  FitToBounds,
+} from "./LeafletChildren";
 import Sidebar from "../sidebar/Sidebar";
-import { categories } from "../../categories";
 import useMarkers from "../../hooks/useMarkers";
-
-const SearchField = () => {
-  const leafletMap = useMap();
-
-  useEffect(() => {
-    const provider = new OpenStreetMapProvider();
-
-    const searchControl = new GeoSearchControl({
-      provider: provider,
-      showMarker: false,
-      autoClose: true,
-      searchLabel: "Adresse eingeben",
-    });
-
-    leafletMap.addControl(searchControl);
-    return () => leafletMap.removeControl(searchControl);
-  }, [leafletMap]);
-
-  return null;
-};
-
-const InstantPopupMarker = (props) => {
-  const leafletRef = useRef();
-  useEffect(() => {
-    leafletRef.current.openPopup();
-  }, []);
-  return <Marker ref={leafletRef} {...props} />;
-};
-
-const CenterMap = ({ centerPosition }) => {
-  const leafletMap = useMap();
-
-  useEffect(() => {
-    if (centerPosition !== null) {
-      leafletMap.setView(centerPosition, 16);
-    }
-  }, [centerPosition, leafletMap]);
-
-  return null;
-};
-
-const FitToBounds = ({ markers }) => {
-  const leafletMap = useMap();
-  const [centered, setCentered] = useState();
-
-  useEffect(() => {
-    if (!centered && markers.length) {
-      let minLat, minLong, maxLat, maxLong;
-      for (const marker of markers) {
-        const { _lat: lat, _long: long } = marker.position;
-        if (!minLat || lat < minLat) {
-          minLat = lat;
-        }
-        if (!minLong || long < minLong) {
-          minLong = long;
-        }
-        if (!maxLat || lat > maxLat) {
-          maxLat = lat;
-        }
-        if (!maxLong || long > maxLong) {
-          maxLong = long;
-        }
-      }
-      if (minLat && maxLat && minLong && maxLong) {
-        const newBounds = new LatLngBounds(
-          [maxLat, minLong],
-          [minLat, maxLong]
-        );
-        setCentered(true);
-        leafletMap.fitBounds(newBounds);
-      }
-    }
-  }, [centered, leafletMap, markers]);
-
-  return null;
-};
 
 const DEFAULT_POPUP_CONTENT = Object.freeze({
   name: "",
@@ -271,105 +192,6 @@ const Map = ({ getMarkersRef, maps }) => {
     setCenterPosition([position._lat, position._long]);
   }
 
-  function renderMarker(marker) {
-    const category = categories.find((ctg) => ctg.key === marker.category);
-
-    return (
-      <Marker
-        key={marker.id}
-        position={[marker.position._lat, marker.position._long]}
-        icon={
-          new DivIcon({
-            html: renderToString(
-              <>
-                <div
-                  style={{ backgroundColor: marker.map.color }}
-                  className="marker-pin"
-                ></div>
-                <category.icon color="white" />
-              </>
-            ),
-            iconSize: [30, 42],
-            iconAnchor: [15, 42],
-            className: "custom-div-icon",
-          })
-        }
-      >
-        <Popup closeOnClick={false}>
-          {!editMode ? (
-            <div>
-              <div style={{ marginBottom: "3px" }}>
-                <label style={{ fontSize: "20px" }}>
-                  <b>{marker.name}</b>
-                </label>
-                <div>
-                  <label style={{ fontSize: "14px" }}>{category.name}</label>
-                </div>
-              </div>
-              {marker.description ? (
-                <div style={{ marginBottom: "3px" }}>
-                  <label style={{ fontSize: "16px" }}>
-                    {marker.description}
-                  </label>
-                  <br />
-                </div>
-              ) : null}
-              {marker.tags?.length ? (
-                <div style={{ marginBottom: "3px" }}>
-                  {marker.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      style={{ fontSize: "14px", margin: "1px" }}
-                      className="badge rounded-pill bg-light text-dark"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  <br />
-                </div>
-              ) : null}
-              <div className="buttonArea d-flex justify-content-end">
-                <button
-                  style={{
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {
-                    handleDeleteButton(marker);
-                  }}
-                  type="button"
-                  className="btn btn-danger m-1"
-                >
-                  Löschen
-                </button>
-                <button
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    handleEditButton(marker);
-                  }}
-                  type="button"
-                  className="btn btn-info m-1"
-                >
-                  Anpassen
-                </button>
-              </div>
-            </div>
-          ) : (
-            //edit mode starts here
-            <MarkerForm
-              content={currentPopupContent}
-              onChange={handlePopupContentChange}
-              addTag={addTag}
-              deleteTag={deleteTag}
-              onEdit={() => handleEditSaveButton(marker)}
-              editMode
-              inputErrors={inputErrors}
-            />
-          )}
-        </Popup>
-      </Marker>
-    );
-  }
-
   return (
     <div className="d-flex">
       <Sidebar
@@ -410,7 +232,29 @@ const Map = ({ getMarkersRef, maps }) => {
             </div>
           </InstantPopupMarker>
         ) : null}
-        {markers.map((marker) => renderMarker(marker))}
+        {markers.map((marker) => (
+          <Marker key={marker.id} marker={marker}>
+            <Popup closeOnClick={false}>
+              {!editMode ? (
+                <MarkerContent
+                  marker={marker}
+                  onDelete={handleDeleteButton}
+                  onEdit={handleEditButton}
+                />
+              ) : (
+                <MarkerForm
+                  content={currentPopupContent}
+                  onChange={handlePopupContentChange}
+                  addTag={addTag}
+                  deleteTag={deleteTag}
+                  onEdit={() => handleEditSaveButton(marker)}
+                  editMode
+                  inputErrors={inputErrors}
+                />
+              )}
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
     </div>
   );
