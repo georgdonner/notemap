@@ -77,7 +77,9 @@ export const FitToBounds = ({ markers }) => {
           [minLat, maxLong]
         );
         setCentered(true);
-        leafletMap.fitBounds(newBounds);
+        leafletMap.fitBounds(newBounds, {
+          maxZoom: 16,
+        });
       }
     }
   }, [centered, leafletMap, markers]);

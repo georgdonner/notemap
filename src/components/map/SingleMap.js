@@ -16,7 +16,7 @@ const SingleMap = () => {
 
   return map ? (
     <div>
-      <Map maps={map ? [map] : []} getMarkersRef={() => markersRef} />
+      <Map singleMap={map} getMarkersRef={() => markersRef} />
     </div>
   ) : (
     <div

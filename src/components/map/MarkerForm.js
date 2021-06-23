@@ -2,17 +2,43 @@ import { categories } from "../../categories";
 
 const MarkerForm = ({
   content,
+  maps,
+  editMode,
   onChange,
+  inputErrors,
   addTag,
   deleteTag,
   onSave,
   onEdit,
-  editMode,
-  inputErrors,
 }) => {
   return (
     <>
       <form style={{ width: "200px" }}>
+        {maps?.length ? (
+          <div className="form-group" style={{ marginBottom: "3px" }}>
+            <label>
+              Karte*
+              <select
+                aria-label="Karte auswählen"
+                className={
+                  inputErrors.map
+                    ? "form-select border-danger textAreaDescription"
+                    : "form-select textAreaDescription"
+                }
+                name="map"
+                value={content.map}
+                onChange={onChange}
+              >
+                <option value="">Karte wählen</option>
+                {maps.map((map) => (
+                  <option key={map.id} value={map.id}>
+                    {map.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        ) : null}
         <div className="form-group" style={{ marginBottom: "3px" }}>
           <label htmlFor="inputName">Name*</label>
           <input

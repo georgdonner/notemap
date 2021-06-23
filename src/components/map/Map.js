@@ -21,32 +21,23 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
   category: "",
   tag: "",
   tags: [],
+  map: "",
 });
 
-const Map = ({ getMarkersRef, maps }) => {
+const Map = ({ getMarkersRef, maps, singleMap }) => {
   const { GeoPoint } = useFirestore;
   const { data: user } = useUser();
 
-  const [inputErrors, setInputErrors] = useState({
-    name: false,
-    category: false,
-  });
+  const [inputErrors, setInputErrors] = useState({});
   const [newMarker, setNewMarker] = useState();
   const [currentPopupContent, setCurrentPopupContent] = useState(
     DEFAULT_POPUP_CONTENT
   );
   const [editMode, setEditMode] = useState(false);
   const [centerMarker, setCenterMarker] = useState(null);
-  const [{ markers, mapsFetched }, searchIndex] = useMarkers(maps);
-
-  function resetPopupContent() {
-    setCurrentPopupContent(DEFAULT_POPUP_CONTENT);
-    setNewMarker(null);
-    setInputErrors({
-      name: false,
-      category: false,
-    });
-  }
+  const [{ markers, mapsFetched }, searchIndex] = useMarkers(
+    maps || [singleMap]
+  );
 
   function MapEvents() {
     useMapEvents({
@@ -71,22 +62,36 @@ const Map = ({ getMarkersRef, maps }) => {
     return null;
   }
 
+  function resetPopupContent() {
+    setCurrentPopupContent(DEFAULT_POPUP_CONTENT);
+    setNewMarker(null);
+    setInputErrors({});
+  }
+
+  function validatePopupContent() {
+    const errors = {};
+
+    if (!currentPopupContent.name) {
+      errors.nameError = true;
+    }
+    if (!currentPopupContent.category) {
+      errors.category = true;
+    }
+    if (maps && !currentPopupContent.map) {
+      errors.map = true;
+    }
+
+    return errors;
+  }
+
   function handleSaveButton() {
-    let nameError = false,
-      categoryError = false;
+    const errors = validatePopupContent();
 
-    if (currentPopupContent.name === "") {
-      nameError = true;
-    }
+    setInputErrors(errors);
 
-    if (currentPopupContent.category === "") {
-      categoryError = true;
-    }
-
-    setInputErrors({ name: nameError, category: categoryError });
-
-    if (nameError === false && categoryError === false) {
-      getMarkersRef()
+    if (!Object.keys(errors).length) {
+      const mapId = maps ? currentPopupContent.map : singleMap.id;
+      getMarkersRef(mapId)
         .add({
           position: new GeoPoint(newMarker.lat, newMarker.lng),
           name: currentPopupContent.name,
@@ -138,20 +143,11 @@ const Map = ({ getMarkersRef, maps }) => {
   }
 
   function handleEditSaveButton(marker) {
-    let nameError = false,
-      categoryError = false;
+    const errors = validatePopupContent();
 
-    if (currentPopupContent.name === "") {
-      nameError = true;
-    }
+    setInputErrors(errors);
 
-    if (currentPopupContent.category === "") {
-      categoryError = true;
-    }
-
-    setInputErrors({ name: nameError, category: categoryError });
-
-    if (nameError === false && categoryError === false) {
+    if (!Object.keys(errors).length) {
       getMarkersRef(marker.map.id)
         .doc(marker.id)
         .update({
@@ -194,12 +190,16 @@ const Map = ({ getMarkersRef, maps }) => {
     setCenterMarker(marker);
   }
 
+  const fetchDone = maps
+    ? maps.length === mapsFetched.length
+    : mapsFetched.length === 1;
+
   return (
     <div className="d-flex">
       <Sidebar
         searchIndex={searchIndex}
         centerOnMarker={centerOnMarker}
-        map={maps.length === 1 ? maps[0] : null}
+        map={singleMap}
       />
       <MapContainer center={[51.341971, 12.37409]} zoom={13}>
         <CenterMap
@@ -211,9 +211,7 @@ const Map = ({ getMarkersRef, maps }) => {
         />
         <SearchField />
         <MapEvents />
-        {maps.length === mapsFetched.length ? (
-          <FitToBounds markers={markers} />
-        ) : null}
+        {fetchDone ? <FitToBounds markers={markers} /> : null}
 
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -233,6 +231,7 @@ const Map = ({ getMarkersRef, maps }) => {
                   addTag={addTag}
                   deleteTag={deleteTag}
                   onSave={handleSaveButton}
+                  maps={maps}
                   errors
                   inputErrors={inputErrors}
                 />
