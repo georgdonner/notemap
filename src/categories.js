@@ -6,6 +6,7 @@ import {
   FaRunning,
   FaTree,
   FaTheaterMasks,
+  FaGraduationCap,
   FaCameraRetro,
   FaCircle,
 } from "react-icons/fa";
@@ -45,6 +46,11 @@ const categories = [
     key: "culture",
     name: "Kultur",
     icon: FaTheaterMasks,
+  },
+  {
+    key: "education",
+    name: "Bildung",
+    icon: FaGraduationCap,
   },
   {
     key: "sight",
