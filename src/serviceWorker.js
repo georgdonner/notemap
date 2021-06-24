@@ -12,7 +12,20 @@ const cacheMap = {
   externalStatic: "external-static-resources",
 };
 
+const clearCaches = async () => {
+  const cacheNames = await caches.keys();
+  const filtered = cacheNames.filter(
+    (name) => !Object.values(cacheMap).includes(name)
+  );
+  return Promise.all(filtered.map((name) => caches.delete(name)));
+};
+
 workbox.core.clientsClaim();
+
+// Clear unnecessary caches
+self.addEventListener("activate", (e) => {
+  e.waitUntil(clearCaches());
+});
 
 const isLocal = (url) => url.origin === self.location.origin;
 const isOSM = (url) => url.origin.match(/openstreetmap.de/);
@@ -70,14 +83,6 @@ workbox.routing.registerRoute(
     (request.destination === "script" || request.destination === "style"),
   new workbox.strategies.StaleWhileRevalidate({
     cacheName: cacheMap.externalStatic,
-    plugins: [
-      new workbox.expiration.ExpirationPlugin({
-        maxAgeSeconds: 60 * 60 * 24 * 30, // expire after 1 month
-      }),
-      new workbox.cacheableResponse.CacheableResponsePlugin({
-        statuses: [200, 0],
-      }),
-    ],
   })
 );
 
