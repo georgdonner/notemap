@@ -223,6 +223,38 @@ exports.removeMember = functions.https.onCall(async (data, context) => {
   });
 });
 
+exports.leaveMap = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "you need to be authenticated"
+    );
+  }
+  if (!data.map) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "map is a required argument"
+    );
+  }
+
+  const userId = context.auth.uid;
+
+  const mapRef = db.doc(`maps/${data.map}`);
+  const mapDoc = await mapRef.get();
+  const { members = {} } = mapDoc.data();
+
+  if (!(userId in members)) {
+    throw new functions.https.HttpsError(
+      "not-found",
+      "not a member of given map"
+    );
+  }
+
+  return mapRef.update({
+    [`members.${userId}`]: admin.firestore.FieldValue.delete(),
+  });
+});
+
 async function sendNotification(message, userDoc) {
   const { messagingTokens, name: userName } = userDoc.data();
 

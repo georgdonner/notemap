@@ -1,17 +1,34 @@
 import React, { useState } from "react";
-import { FaCog, FaShareAlt } from "react-icons/all";
-import { Link } from "react-router-dom";
-import { useUser } from "reactfire";
+import { FaCog, FaShareAlt, FaSignOutAlt } from "react-icons/all";
+import { Link, useHistory } from "react-router-dom";
+import { useFunctions, useUser } from "reactfire";
 
 import ShareModal from "./ShareModal";
 import "./Description.css";
 
 const Description = ({ map }) => {
+  const history = useHistory();
   const { data: user } = useUser();
+  const functions = useFunctions();
 
   const [shareModal, toggleShareModal] = useState(false);
+  const [loadingLeave, setLoadingLeave] = useState(false);
 
   const isOwner = user?.uid === map?.owner.id;
+
+  async function leaveMap() {
+    try {
+      setLoadingLeave(true);
+      await functions.httpsCallable("leaveMap")({
+        map: map.id,
+      });
+      history.replace("/");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingLeave(false);
+    }
+  }
 
   return !map ? (
     <>
@@ -22,21 +39,34 @@ const Description = ({ map }) => {
     <div className="p-3">
       <div className="d-flex justify-content-between align-items-center">
         <h2 className="mb-0">{map.name}</h2>
-        {isOwner ? (
-          <div className="d-flex">
-            <div
-              className="sidebar-icon me-3"
-              onClick={() => toggleShareModal(true)}
-            >
-              <FaShareAlt />
-              <span>Teilen</span>
+        <div className="d-flex">
+          {isOwner ? (
+            <>
+              <div
+                className="sidebar-icon me-3"
+                onClick={() => toggleShareModal(true)}
+              >
+                <FaShareAlt />
+                <span>Teilen</span>
+              </div>
+              <Link to={`/map/${map.id}/edit`} className="sidebar-icon">
+                <FaCog />
+                <span>Bearbeiten</span>
+              </Link>
+            </>
+          ) : (
+            <div className="sidebar-icon" onClick={leaveMap}>
+              {loadingLeave ? (
+                <div className="spinner-border button-loading" role="status">
+                  <span className="visually-hidden">Lädt...</span>
+                </div>
+              ) : (
+                <FaSignOutAlt />
+              )}
+              <span>Karte verlassen</span>
             </div>
-            <Link to={`/map/${map.id}/edit`} className="sidebar-icon">
-              <FaCog />
-              <span>Bearbeiten</span>
-            </Link>
-          </div>
-        ) : null}
+          )}
+        </div>
       </div>
       {map.description ? <p className="mt-3 mb-0">{map.description}</p> : null}
       {!isOwner ? (
