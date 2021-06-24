@@ -11,16 +11,19 @@ const Description = ({ map }) => {
 
   const [shareModal, toggleShareModal] = useState(false);
 
-  const isOwner = user?.uid === map.owner.id;
+  const isOwner = user?.uid === map?.owner.id;
 
   return !map ? (
-    <h2 className="p-3">Hauptkarte</h2>
+    <>
+      <h2 className="p-3">Hauptkarte</h2>
+      <p className="px-3">Hier findest du alle Markierungen deiner Karten</p>
+    </>
   ) : (
     <div className="p-3">
       <div className="d-flex justify-content-between align-items-center">
         <h2 className="mb-0">{map.name}</h2>
-        <div className="d-flex">
-          {isOwner ? (
+        {isOwner ? (
+          <div className="d-flex">
             <div
               className="sidebar-icon me-3"
               onClick={() => toggleShareModal(true)}
@@ -28,12 +31,12 @@ const Description = ({ map }) => {
               <FaShareAlt />
               <span>Teilen</span>
             </div>
-          ) : null}
-          <Link to={`/map/${map.id}/edit`} className="sidebar-icon">
-            <FaCog />
-            <span>Bearbeiten</span>
-          </Link>
-        </div>
+            <Link to={`/map/${map.id}/edit`} className="sidebar-icon">
+              <FaCog />
+              <span>Bearbeiten</span>
+            </Link>
+          </div>
+        ) : null}
       </div>
       {map.description ? <p className="mt-3 mb-0">{map.description}</p> : null}
       {!isOwner ? (
