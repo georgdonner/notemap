@@ -155,3 +155,88 @@ async function cleanupEvents() {
 
   await batch.commit();
 }
+
+exports.addMember = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "you need to be authenticated"
+    );
+  }
+  if (!data.map || !data.email) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "both map and email are required arguments"
+    );
+  }
+
+  const mapRef = admin.firestore().collection("maps").doc(data.map);
+  const mapDoc = await mapRef.get();
+
+  if (context.auth.uid !== mapDoc.data().owner.id) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "only map owners can add friends"
+    );
+  }
+
+  const userQuery = await admin
+    .firestore()
+    .collection("users")
+    .where("email", "==", data.email)
+    .get();
+
+  if (userQuery.empty) {
+    throw new functions.https.HttpsError(
+      "not-found",
+      "Keine Person mit dieser E-Mail-Adresse gefunden"
+    );
+  }
+
+  const userDoc = userQuery.docs[0];
+
+  return mapRef.update({
+    [`members.${userDoc.id}`]: {
+      name: userDoc.data().name,
+    },
+  });
+});
+
+exports.removeMember = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "you need to be authenticated"
+    );
+  }
+  if (!data.map || !data.userId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "both map and userId are required arguments"
+    );
+  }
+
+  const mapRef = admin.firestore().collection("maps").doc(data.map);
+  const mapDoc = await mapRef.get();
+
+  if (context.auth.uid !== mapDoc.data().owner.id) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "only map owners can remove friends"
+    );
+  }
+
+  const userDoc = await admin
+    .firestore()
+    .collection("users")
+    .doc(data.userId)
+    .get();
+
+  if (!userDoc.exists) {
+    throw new functions.https.HttpsError("not-found", "user not found");
+  }
+
+  return mapRef.update({
+    [`members.${userDoc.id}`]: admin.firestore.FieldValue.delete(),
+  });
+});
