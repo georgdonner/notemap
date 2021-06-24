@@ -115,7 +115,11 @@ function MainRouter() {
   const { status, data: signInCheckResult } = useSigninCheck();
   const isAuthenticated = signInCheckResult?.signedIn;
 
-  const [sidebar, setSidebar] = useState(false);
+  const [sidebar, setSidebar] = useState(true);
+
+  function toggleSidebar() {
+    setSidebar(!sidebar);
+  }
 
   const firestore = useFirestore();
 

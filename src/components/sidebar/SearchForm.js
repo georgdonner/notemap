@@ -1,18 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { categories } from "../../categories";
 
 const SearchForm = ({ searchIndex, centerOnMarker }) => {
   const [matchedIndexes, setMatchedIndexes] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
+  const [heightOfDescriptionForm, setHeightOfDescriptionForm] = useState(0);
 
-  let heightOfDescriptionForm = 0;
-  const searchFormContainer = document.getElementById("searchFormContainer");
+  useEffect(() => {
+    let searchFormContainer = document.getElementById("searchFormContainer");
 
-  if (searchFormContainer !== null) {
-    heightOfDescriptionForm =
-      searchFormContainer.previousSibling.offsetHeight - 1;
-  }
+    if (searchFormContainer !== null) {
+      setHeightOfDescriptionForm(
+        searchFormContainer.previousSibling.offsetHeight - 1
+      );
+      console.log(heightOfDescriptionForm);
+    }
+  }, []);
 
   function searchInputChange(e) {
     setSearchInputValue(e.target.value);

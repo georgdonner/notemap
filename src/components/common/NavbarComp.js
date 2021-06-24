@@ -8,7 +8,7 @@ const NavbarComp = ({ sidebar, setSidebar }) => {
 
   return (
     <div className="justify-content-start">
-      <Navbar bg="light" expand="xxxl">
+      <Navbar bg="light" expand="true">
         <Container>
           <Navbar.Toggle
             aria-controls="basic-navbar-nav"
