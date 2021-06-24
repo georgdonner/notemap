@@ -1,22 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 import { categories } from "../../categories";
 
 const SearchForm = ({ searchIndex, centerOnMarker }) => {
   const [matchedIndexes, setMatchedIndexes] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
-  const [heightOfDescriptionForm, setHeightOfDescriptionForm] = useState(0);
-
-  useEffect(() => {
-    let searchFormContainer = document.getElementById("searchFormContainer");
-
-    if (searchFormContainer !== null) {
-      setHeightOfDescriptionForm(
-        searchFormContainer.previousSibling.offsetHeight - 1
-      );
-      console.log(heightOfDescriptionForm);
-    }
-  }, []);
 
   function searchInputChange(e) {
     setSearchInputValue(e.target.value);
@@ -43,16 +31,12 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
   }
 
   return (
-    <div id="searchFormContainer" style={{ zIndex: 1 }}>
-      <div
-        className="p-3 pb-0"
-        style={{
-          position: "sticky",
-          top: heightOfDescriptionForm,
-          zIndex: 3,
-          background: "white",
-        }}
-      >
+    <div
+      id="searchFormContainer"
+      style={{ overflowY: "hidden" }}
+      className="d-flex flex-column"
+    >
+      <div className="p-3 pb-0">
         <input
           autoComplete="off"
           className="form-control"
@@ -64,7 +48,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
           style={{ width: "100%" }}
         />
       </div>
-      <div className="p-3 pt-0">
+      <div className="p-3 pt-0" style={{ overflowY: "scroll" }}>
         {matchedIndexes.map((object) => (
           <div
             key={object.id}

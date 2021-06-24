@@ -20,8 +20,8 @@ const buildSw = () => {
   return fs.writeFileSync(swFileDist, replaced);
 };
 
+buildSw();
+
 if (args.includes("--watch")) {
   fs.watch(swFileSrc, buildSw);
-} else {
-  buildSw();
 }
