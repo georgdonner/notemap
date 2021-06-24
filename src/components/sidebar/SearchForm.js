@@ -6,14 +6,6 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
   const [matchedIndexes, setMatchedIndexes] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
 
-  let heightOfDescriptionForm = 0;
-  const searchFormContainer = document.getElementById("searchFormContainer");
-
-  if (searchFormContainer !== null) {
-    heightOfDescriptionForm =
-      searchFormContainer.previousSibling.offsetHeight - 1;
-  }
-
   function searchInputChange(e) {
     setSearchInputValue(e.target.value);
 
@@ -39,16 +31,12 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
   }
 
   return (
-    <div id="searchFormContainer" style={{ zIndex: 1 }}>
-      <div
-        className="p-3 pb-0"
-        style={{
-          position: "sticky",
-          top: heightOfDescriptionForm,
-          zIndex: 3,
-          background: "white",
-        }}
-      >
+    <div
+      id="searchFormContainer"
+      style={{ overflowY: "hidden" }}
+      className="d-flex flex-column"
+    >
+      <div className="p-3 pb-0">
         <input
           autoComplete="off"
           className="form-control"
@@ -60,7 +48,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
           style={{ width: "100%" }}
         />
       </div>
-      <div className="p-3 pt-0">
+      <div className="p-3 pt-0" style={{ overflowY: "scroll" }}>
         {matchedIndexes.map((object) => (
           <div
             key={object.id}

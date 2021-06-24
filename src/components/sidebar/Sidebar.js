@@ -8,10 +8,10 @@ const Sidebar = ({ searchIndex, centerOnMarker, map }) => {
       style={{
         height: "100vh",
         boxShadow: "0 0 20px rgba(0, 0, 0, 0.3)",
-        overflowY: "scroll",
         flex: 1,
+        zIndex: 1000,
       }}
-      className="d-inline-block"
+      className="d-none d-sm-flex flex-column"
     >
       <Description map={map} />
       <SearchForm searchIndex={searchIndex} centerOnMarker={centerOnMarker} />

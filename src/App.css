@@ -3,6 +3,11 @@
   height: 100vh;
   display: inline-block;
 }
+@media screen and (max-width: 575px) {
+  .leaflet-container{
+    width: 100vw;
+  }
+}
 .marker-pin {
   width: 30px;
   height: 30px;

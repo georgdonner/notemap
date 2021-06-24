@@ -1,13 +1,26 @@
 import React, { useState } from "react";
-import { FaCog, FaUserPlus, FaPlus, FaTimes } from "react-icons/all";
+import {
+  FaCog,
+  FaShareAlt,
+  FaUserPlus,
+  FaPlus,
+  FaTimes,
+} from "react-icons/all";
 import { useHistory } from "react-router-dom";
+import { useUser } from "reactfire";
 
+import ShareModal from "./ShareModal";
 import SharedWith from "../common/SharedWith";
+import "./Description.css";
 
 const Description = ({ map }) => {
   const history = useHistory();
   const members = map ? Object.values(map.members || {}) : [];
+  const { data: user } = useUser();
 
+  const isOwner = user?.uid === map.owner.id;
+
+  const [shareModal, toggleShareModal] = useState(false);
   const [addUser, setAddUser] = useState(false);
   const [addUserInputValue, setAddUserInputValue] = useState("");
 
@@ -29,26 +42,26 @@ const Description = ({ map }) => {
   }
 
   return !map ? (
-    <h2
-      style={{ position: "sticky", top: 0, zIndex: 10, background: "white" }}
-      className="p-3"
-    >
-      Hauptkarte
-    </h2>
+    <h2 className="p-3">Hauptkarte</h2>
   ) : (
-    <div
-      style={{ position: "sticky", top: 0, zIndex: 10, background: "white" }}
-      className="p-3"
-    >
+    <div className="p-3">
       <div className="mb-3 d-flex justify-content-between align-items-center">
         <h2 className="mb-0">{map.name}</h2>
-        <FaCog
-          style={{
-            fontSize: "25px",
-            cursor: "pointer",
-          }}
-          onClick={editButton}
-        />
+        <div className="d-flex">
+          {isOwner ? (
+            <div
+              className="sidebar-icon me-3"
+              onClick={() => toggleShareModal(true)}
+            >
+              <FaShareAlt />
+              <span>Teilen</span>
+            </div>
+          ) : null}
+          <div className="sidebar-icon" onClick={editButton}>
+            <FaCog />
+            <span>Bearbeiten</span>
+          </div>
+        </div>
       </div>
       {map.description ? <p className="mb-3">{map.description}</p> : null}
       <div>
@@ -90,6 +103,13 @@ const Description = ({ map }) => {
             />
           </span>
         </div>
+      ) : null}
+      {isOwner ? (
+        <ShareModal
+          show={shareModal}
+          onClose={() => toggleShareModal(false)}
+          map={map}
+        />
       ) : null}
     </div>
   );
