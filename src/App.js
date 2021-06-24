@@ -3,6 +3,7 @@ import { FirebaseAppProvider } from "reactfire";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
 import { useSigninCheck, useFirestore, useMessaging } from "reactfire";
 import { Toast, ToastContainer } from "react-bootstrap";
+import firebase from "firebase/app";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
 
@@ -117,9 +118,7 @@ function MainRouter() {
   const firestore = useFirestore();
 
   useEffect(() => {
-    try {
-      firestore.enablePersistence();
-    } catch (error) {
+    firestore.enablePersistence().catch((error) => {
       let message = "Firebase offline mode not enabled.";
       if (error.code === "failed-precondition") {
         message += " Can only be enabled in one tab at a time";
@@ -127,7 +126,7 @@ function MainRouter() {
         message += " Browser does not support all of the required features";
       }
       console.warn(message);
-    }
+    });
   }, [firestore]);
 
   return status === "loading" ? (
@@ -141,7 +140,9 @@ function MainRouter() {
     </div>
   ) : (
     <Router>
-      <PushMessaging user={signInCheckResult.user} />
+      {firebase.messaging.isSupported() ? (
+        <PushMessaging user={signInCheckResult.user} />
+      ) : null}
       <div className="App">
         <Switch>
           <PublicRoute path="/login" isAuthenticated={isAuthenticated}>
