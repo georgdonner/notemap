@@ -85,17 +85,6 @@ async function notifyMarkerAdded(mapId, marker) {
   }
 
   const ownerDoc = await db.doc(`users/${owner.id}`).get();
-  const { messagingTokens, name: userName } = ownerDoc.data();
-
-  if (!messagingTokens.length) {
-    return functions.logger.log(
-      `There are no notification tokens to send to user ${userName}.`
-    );
-  }
-
-  functions.logger.log(
-    `Sending ${messagingTokens.length} notifications to ${userName}.`
-  );
 
   const addedBy = members[marker.user]?.name || "Jemand";
 
@@ -109,27 +98,9 @@ async function notifyMarkerAdded(mapId, marker) {
         link: `map/${mapId}`,
       },
     },
-    tokens: messagingTokens,
   };
 
-  // Send notifications to all tokens.
-  const response = await admin.messaging().sendMulticast(message);
-
-  // For each message check if there was an error.
-  if (response.failureCount > 0) {
-    const failedTokens = [];
-    response.responses.forEach((resp, idx) => {
-      if (!resp.success) {
-        failedTokens.push(messagingTokens[idx]);
-      }
-    });
-
-    if (failedTokens.length > 0) {
-      return db.doc(`users/${owner.id}`).update({
-        messagingTokens: admin.firestore.FieldValue.arrayRemove(failedTokens),
-      });
-    }
-  }
+  return sendNotification(message, ownerDoc);
 }
 
 exports.scheduledFunction = functions.pubsub
@@ -170,10 +141,11 @@ exports.addMember = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const mapRef = admin.firestore().collection("maps").doc(data.map);
+  const mapRef = db.doc(`maps/${data.map}`);
   const mapDoc = await mapRef.get();
+  const { owner, name: mapName } = mapDoc.data();
 
-  if (context.auth.uid !== mapDoc.data().owner.id) {
+  if (context.auth.uid !== owner.id) {
     throw new functions.https.HttpsError(
       "permission-denied",
       "only map owners can add friends"
@@ -195,11 +167,25 @@ exports.addMember = functions.https.onCall(async (data, context) => {
 
   const userDoc = userQuery.docs[0];
 
-  return mapRef.update({
+  await mapRef.update({
     [`members.${userDoc.id}`]: {
       name: userDoc.data().name,
     },
   });
+
+  const message = {
+    notification: {
+      title: "Neue Karte",
+      body: `${owner.name} hat dich zur Karte "${mapName}" hinzugefügt.`,
+    },
+    webpush: {
+      fcmOptions: {
+        link: `map/${mapDoc.id}`,
+      },
+    },
+  };
+
+  return sendNotification(message, userDoc);
 });
 
 exports.removeMember = functions.https.onCall(async (data, context) => {
@@ -216,7 +202,7 @@ exports.removeMember = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const mapRef = admin.firestore().collection("maps").doc(data.map);
+  const mapRef = db.doc(`maps/${data.map}`);
   const mapDoc = await mapRef.get();
 
   if (context.auth.uid !== mapDoc.data().owner.id) {
@@ -226,11 +212,7 @@ exports.removeMember = functions.https.onCall(async (data, context) => {
     );
   }
 
-  const userDoc = await admin
-    .firestore()
-    .collection("users")
-    .doc(data.userId)
-    .get();
+  const userDoc = await db.doc(`users/${data.userId}`).get();
 
   if (!userDoc.exists) {
     throw new functions.https.HttpsError("not-found", "user not found");
@@ -240,3 +222,38 @@ exports.removeMember = functions.https.onCall(async (data, context) => {
     [`members.${userDoc.id}`]: admin.firestore.FieldValue.delete(),
   });
 });
+
+async function sendNotification(message, userDoc) {
+  const { messagingTokens, name: userName } = userDoc.data();
+
+  if (!messagingTokens.length) {
+    return functions.logger.log(
+      `There are no notification tokens to send to user ${userName}.`
+    );
+  }
+
+  functions.logger.log(
+    `Sending ${messagingTokens.length} notifications to ${userName}.`
+  );
+
+  // Send notifications to all tokens.
+  const response = await admin
+    .messaging()
+    .sendMulticast({ ...message, tokens: messagingTokens });
+
+  // For each message check if there was an error.
+  if (response.failureCount > 0) {
+    const failedTokens = [];
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        failedTokens.push(messagingTokens[idx]);
+      }
+    });
+
+    if (failedTokens.length > 0) {
+      return db.doc(`users/${userDoc.id}`).update({
+        messagingTokens: admin.firestore.FieldValue.arrayRemove(failedTokens),
+      });
+    }
+  }
+}

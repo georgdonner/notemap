@@ -6,7 +6,7 @@ const ShareModal = ({ show, onClose, map }) => {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [loadingAdd, setLoadingAdd] = useState();
-  const [members, setMembers] = useState(map.members || {});
+  const [members, setMembers] = useState(map?.members || {});
 
   const functions = useFunctions();
 
@@ -16,7 +16,9 @@ const ShareModal = ({ show, onClose, map }) => {
   }));
 
   useEffect(() => {
-    setMembers(map.members);
+    if (map.members) {
+      setMembers(map.members);
+    }
   }, [map.members]);
 
   async function addMember() {
