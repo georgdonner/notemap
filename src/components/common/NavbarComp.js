@@ -7,8 +7,8 @@ const NavbarComp = ({ sidebar, setSidebar }) => {
   }
 
   return (
-    <div className="justify-content-start">
-      <Navbar bg="light" expand="true">
+    <div className="d-flex flex-start">
+      <Navbar bg="light" expand="true" style={{ flex: 1 }}>
         <Container>
           <Navbar.Toggle
             aria-controls="basic-navbar-nav"

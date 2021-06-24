@@ -117,10 +117,6 @@ function MainRouter() {
 
   const [sidebar, setSidebar] = useState(true);
 
-  function toggleSidebar() {
-    setSidebar(!sidebar);
-  }
-
   const firestore = useFirestore();
 
   useEffect(() => {

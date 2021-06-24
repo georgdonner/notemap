@@ -24,14 +24,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
   map: "",
 });
 
-const Map = ({
-  getMarkersRef,
-  maps,
-  singleMap,
-  sidebar,
-  setSidebar,
-  toggleSidebar,
-}) => {
+const Map = ({ getMarkersRef, maps, singleMap, sidebar, setSidebar }) => {
   const { GeoPoint } = useFirestore;
   const { data: user } = useUser();
 
@@ -195,11 +188,6 @@ const Map = ({
 
   function centerOnMarker(marker) {
     setCenterMarker(marker);
-    toggleSidebar();
-  }
-
-  function toggleSidebar() {
-    setSidebar(!sidebar);
   }
 
   const fetchDone = maps
