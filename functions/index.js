@@ -85,17 +85,6 @@ async function notifyMarkerAdded(mapId, marker) {
   }
 
   const ownerDoc = await db.doc(`users/${owner.id}`).get();
-  const { messagingTokens, name: userName } = ownerDoc.data();
-
-  if (!messagingTokens.length) {
-    return functions.logger.log(
-      `There are no notification tokens to send to user ${userName}.`
-    );
-  }
-
-  functions.logger.log(
-    `Sending ${messagingTokens.length} notifications to ${userName}.`
-  );
 
   const addedBy = members[marker.user]?.name || "Jemand";
 
@@ -109,27 +98,9 @@ async function notifyMarkerAdded(mapId, marker) {
         link: `map/${mapId}`,
       },
     },
-    tokens: messagingTokens,
   };
 
-  // Send notifications to all tokens.
-  const response = await admin.messaging().sendMulticast(message);
-
-  // For each message check if there was an error.
-  if (response.failureCount > 0) {
-    const failedTokens = [];
-    response.responses.forEach((resp, idx) => {
-      if (!resp.success) {
-        failedTokens.push(messagingTokens[idx]);
-      }
-    });
-
-    if (failedTokens.length > 0) {
-      return db.doc(`users/${owner.id}`).update({
-        messagingTokens: admin.firestore.FieldValue.arrayRemove(failedTokens),
-      });
-    }
-  }
+  return sendNotification(message, ownerDoc);
 }
 
 exports.scheduledFunction = functions.pubsub
@@ -154,4 +125,167 @@ async function cleanupEvents() {
   pastEvents.forEach((event) => batch.delete(event.ref));
 
   await batch.commit();
+}
+
+exports.addMember = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "you need to be authenticated"
+    );
+  }
+  if (!data.map || !data.email) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "both map and email are required arguments"
+    );
+  }
+
+  const mapRef = db.doc(`maps/${data.map}`);
+  const mapDoc = await mapRef.get();
+  const { owner, name: mapName } = mapDoc.data();
+
+  if (context.auth.uid !== owner.id) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "only map owners can add friends"
+    );
+  }
+
+  const userQuery = await admin
+    .firestore()
+    .collection("users")
+    .where("email", "==", data.email)
+    .get();
+
+  if (userQuery.empty) {
+    throw new functions.https.HttpsError(
+      "not-found",
+      "Keine Person mit dieser E-Mail-Adresse gefunden"
+    );
+  }
+
+  const userDoc = userQuery.docs[0];
+
+  await mapRef.update({
+    [`members.${userDoc.id}`]: {
+      name: userDoc.data().name,
+    },
+  });
+
+  const message = {
+    notification: {
+      title: "Neue Karte",
+      body: `${owner.name} hat dich zur Karte "${mapName}" hinzugefügt.`,
+    },
+    webpush: {
+      fcmOptions: {
+        link: `map/${mapDoc.id}`,
+      },
+    },
+  };
+
+  return sendNotification(message, userDoc);
+});
+
+exports.removeMember = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "you need to be authenticated"
+    );
+  }
+  if (!data.map || !data.userId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "both map and userId are required arguments"
+    );
+  }
+
+  const mapRef = db.doc(`maps/${data.map}`);
+  const mapDoc = await mapRef.get();
+
+  if (context.auth.uid !== mapDoc.data().owner.id) {
+    throw new functions.https.HttpsError(
+      "permission-denied",
+      "only map owners can remove friends"
+    );
+  }
+
+  const userDoc = await db.doc(`users/${data.userId}`).get();
+
+  if (!userDoc.exists) {
+    throw new functions.https.HttpsError("not-found", "user not found");
+  }
+
+  return mapRef.update({
+    [`members.${userDoc.id}`]: admin.firestore.FieldValue.delete(),
+  });
+});
+
+exports.leaveMap = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      "unauthenticated",
+      "you need to be authenticated"
+    );
+  }
+  if (!data.map) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "map is a required argument"
+    );
+  }
+
+  const userId = context.auth.uid;
+
+  const mapRef = db.doc(`maps/${data.map}`);
+  const mapDoc = await mapRef.get();
+  const { members = {} } = mapDoc.data();
+
+  if (!(userId in members)) {
+    throw new functions.https.HttpsError(
+      "not-found",
+      "not a member of given map"
+    );
+  }
+
+  return mapRef.update({
+    [`members.${userId}`]: admin.firestore.FieldValue.delete(),
+  });
+});
+
+async function sendNotification(message, userDoc) {
+  const { messagingTokens, name: userName } = userDoc.data();
+
+  if (!messagingTokens.length) {
+    return functions.logger.log(
+      `There are no notification tokens to send to user ${userName}.`
+    );
+  }
+
+  functions.logger.log(
+    `Sending ${messagingTokens.length} notifications to ${userName}.`
+  );
+
+  // Send notifications to all tokens.
+  const response = await admin
+    .messaging()
+    .sendMulticast({ ...message, tokens: messagingTokens });
+
+  // For each message check if there was an error.
+  if (response.failureCount > 0) {
+    const failedTokens = [];
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        failedTokens.push(messagingTokens[idx]);
+      }
+    });
+
+    if (failedTokens.length > 0) {
+      return db.doc(`users/${userDoc.id}`).update({
+        messagingTokens: admin.firestore.FieldValue.arrayRemove(failedTokens),
+      });
+    }
+  }
 }

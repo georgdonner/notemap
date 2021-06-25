@@ -36,7 +36,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
       style={{ overflowY: "hidden" }}
       className="d-flex flex-column"
     >
-      <div className="p-3 pb-0">
+      <div className="px-3 pt-1">
         <input
           autoComplete="off"
           className="form-control"

@@ -59,7 +59,7 @@ const MapForm = () => {
 
   return (
     <div className="container p-4" style={{ maxWidth: "1000px" }}>
-      <h2 className="mb-4">Neue Karte</h2>
+      <h2 className="mb-4">{id ? "Karte bearbeiten" : "Neue Karte"}</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="name" className="form-label">

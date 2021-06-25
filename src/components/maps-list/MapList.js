@@ -98,8 +98,8 @@ const MapList = () => {
               Hauptkarte
             </Link>
             <p className="fs-5 mt-3 mb-0 text-secondary">
-              Hier finden Sie alle Markierungen Ihrer Karten zusammengefasst auf
-              einer Karte
+              Hier findest du alle Markierungen deiner Karten zusammengefasst
+              auf einer Karte
             </p>
             <p className="fs-5 mt-3 mb-0">
               {totalMarkers} Markierung{totalMarkers !== 1 ? "en" : ""} von{" "}
