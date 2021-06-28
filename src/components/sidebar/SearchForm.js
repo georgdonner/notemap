@@ -4,6 +4,17 @@ import { useEffect } from "react";
 import { categories } from "../../categories";
 import useOnline from "../../hooks/useOnline";
 
+const formatAddress = (address) => {
+  let str = `${address.street}, ` || "";
+  if (address.postcode) {
+    str += address.postcode + " ";
+  }
+  if (address.city) {
+    str += address.city;
+  }
+  return str;
+};
+
 const SearchForm = ({ searchIndex, centerOnMarker }) => {
   const [matchedIndexes, setMatchedIndexes] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
@@ -34,11 +45,11 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
   }
 
   useEffect(() => {
-    if (!online && !matchedIndexes.length) {
+    if (!online && !searchInputValue) {
       const all = Object.values(searchIndex.store);
       setMatchedIndexes(all);
     }
-  }, [online, searchIndex, matchedIndexes]);
+  }, [online, searchIndex, searchInputValue]);
 
   return (
     <div
@@ -71,7 +82,12 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
               <h6 className="card-subtitle mb-2 text-muted">
                 {categories.find((ctg) => ctg.key === object.category)?.name}
               </h6>
-              <p className="card-text">{object.description}</p>
+              <div className="card-text">
+                <p>{object.description}</p>
+                {!online && object.address ? (
+                  <p>{formatAddress(object.address)}</p>
+                ) : null}
+              </div>
               <div>
                 {object.tags.map((tag) => (
                   <span
