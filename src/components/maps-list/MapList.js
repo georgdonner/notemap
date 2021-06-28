@@ -4,6 +4,7 @@ import tinycolor from "tinycolor2";
 import styled from "styled-components";
 
 import SharedWith from "../common/SharedWith";
+import Footer from "./Footer";
 
 const lightenColor = (hex, amount = 0.99) => {
   const hsl = tinycolor(hex).toHsl();
@@ -113,6 +114,7 @@ const MapList = () => {
           <MapCard key={map.id} map={map} owned={map.owner.id === user.uid} />
         ))}
       </div>
+      <Footer />
     </div>
   );
 };
