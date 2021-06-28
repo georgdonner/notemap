@@ -14,6 +14,9 @@ import {
 } from "./LeafletChildren";
 import Sidebar from "../sidebar/Sidebar";
 import useMarkers from "../../hooks/useMarkers";
+import useOnline from "../../hooks/useOnline";
+import SearchForm from "../sidebar/SearchForm";
+import Description from "../sidebar/Description";
 
 const DEFAULT_POPUP_CONTENT = Object.freeze({
   name: "",
@@ -27,6 +30,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
 const Map = ({ getMarkersRef, maps, singleMap }) => {
   const { GeoPoint } = useFirestore;
   const { data: user } = useUser();
+  const online = useOnline();
 
   const [inputErrors, setInputErrors] = useState({});
   const [newMarker, setNewMarker] = useState();
@@ -194,7 +198,7 @@ const Map = ({ getMarkersRef, maps, singleMap }) => {
     ? maps.length === mapsFetched.length
     : mapsFetched.length === 1;
 
-  return (
+  return online ? (
     <div className="d-flex">
       <Sidebar
         searchIndex={searchIndex}
@@ -267,6 +271,11 @@ const Map = ({ getMarkersRef, maps, singleMap }) => {
           </Marker>
         ))}
       </MapContainer>
+    </div>
+  ) : (
+    <div className="container">
+      <Description map={singleMap} />
+      <SearchForm searchIndex={searchIndex} />
     </div>
   );
 };

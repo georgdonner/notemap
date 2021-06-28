@@ -43,11 +43,12 @@ function useMarkers(maps) {
     new Document({
       preset: "performance",
       tokenize: "full",
+      minlength: 0,
       document: {
-        /*index: [
-          { field: "name", tokenize: "full" },
-          { field: "tags", tokenize: "forward" },
-        ]*/
+        // /*index: [
+        //   { field: "name", tokenize: "full" },
+        //   { field: "tags", tokenize: "forward" },
+        // ]*/
         index: ["name", "tags"],
         store: true,
       },

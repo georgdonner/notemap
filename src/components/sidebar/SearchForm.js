@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 
 import { categories } from "../../categories";
+import useOnline from "../../hooks/useOnline";
 
 const SearchForm = ({ searchIndex, centerOnMarker }) => {
   const [matchedIndexes, setMatchedIndexes] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
+  const online = useOnline();
 
   function searchInputChange(e) {
     setSearchInputValue(e.target.value);
@@ -30,6 +33,13 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
     }
   }
 
+  useEffect(() => {
+    if (!online && !matchedIndexes.length) {
+      const all = Object.values(searchIndex.store);
+      setMatchedIndexes(all);
+    }
+  }, [online, searchIndex, matchedIndexes]);
+
   return (
     <div
       id="searchFormContainer"
@@ -54,7 +64,7 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
             key={object.id}
             className="card"
             style={{ width: "100%", cursor: "pointer" }}
-            onClick={() => centerOnMarker(object)}
+            onClick={centerOnMarker ? () => centerOnMarker(object) : () => {}}
           >
             <div className="card-body">
               <h5 className="card-title">{object.name}</h5>
