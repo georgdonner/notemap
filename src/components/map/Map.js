@@ -218,7 +218,7 @@ const Map = ({ getMarkersRef, maps, singleMap }) => {
         {fetchDone ? <FitToBounds markers={markers} /> : null}
 
         <TileLayer
-          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors; Nominatim API'
           url="https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png"
         />
         {newMarker ? (

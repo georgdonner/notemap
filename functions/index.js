@@ -1,5 +1,6 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const axios = require("axios");
 admin.initializeApp();
 
 const db = admin.firestore();
@@ -46,6 +47,7 @@ exports.onMarkerCreate = markerTrigger.onCreate((doc, context) => {
   return Promise.allSettled([
     updateCount(context.params.mapId, context.eventId, +1),
     notifyMarkerAdded(context.params.mapId, doc.data()),
+    lookupAddress(doc),
   ]);
 });
 
@@ -72,6 +74,47 @@ async function updateCount(mapId, eventId, delta) {
       throw error;
     }
   }
+}
+
+async function lookupAddress(markerDoc) {
+  const marker = markerDoc.data();
+
+  const res = await axios({
+    method: "get",
+    url: "https://nominatim.openstreetmap.org/reverse",
+    headers: {
+      "User-Agent": "Notemap - Student project",
+    },
+    params: {
+      format: "jsonv2",
+      lat: marker.position._latitude,
+      lon: marker.position._longitude,
+    },
+  });
+
+  if (res.data?.address) {
+    const { road, house_number, city, postcode } = res.data.address;
+
+    const address = {};
+    if (city) address.city = city;
+    if (postcode) address.postcode = postcode;
+    if (road) {
+      address.street = road;
+      if (house_number) {
+        address.street += ` ${house_number}`;
+      }
+    }
+
+    if (Object.keys(address).length) {
+      return markerDoc.ref.update({
+        address,
+      });
+    }
+  }
+
+  return functions.logger.log(
+    `No address found for marker at ${marker.position._latitude}, ${marker.position._longitude}.`
+  );
 }
 
 async function notifyMarkerAdded(mapId, marker) {
