@@ -3,13 +3,18 @@ require("dotenv").config({
 });
 const fs = require("fs");
 
-const swFileSrc = "./src/serviceWorker.js";
-const swFileDist = "./public/serviceWorker.js";
+const swFilename = "serviceWorker.js";
+const swSrc = `./src/${swFilename}`;
+const swDist = {
+  dev: "public",
+  prod: "build",
+};
 
 const args = process.argv.slice(2);
+const env = args.includes("--watch") ? "dev" : "prod";
 
-const buildSw = () => {
-  const fileContent = fs.readFileSync(swFileSrc, {
+const buildSw = async () => {
+  const fileContent = fs.readFileSync(swSrc, {
     encoding: "utf-8",
   });
 
@@ -17,11 +22,13 @@ const buildSw = () => {
     return `"${process.env[p1]}"`;
   });
 
-  return fs.writeFileSync(swFileDist, replaced);
+  await fs.writeFileSync(`./${swDist[env]}/${swFilename}`, replaced);
+
+  console.log("Service worker build complete");
 };
 
 buildSw();
 
-if (args.includes("--watch")) {
-  fs.watch(swFileSrc, buildSw);
+if (env === "dev") {
+  fs.watch(swSrc, buildSw);
 }
