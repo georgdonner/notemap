@@ -1,5 +1,5 @@
 import React from "react";
-import { Navbar, Container, Nav } from "react-bootstrap";
+import { Navbar, Nav } from "react-bootstrap";
 
 const NavbarComp = ({ sidebar, setSidebar }) => {
   function toggleSidebar() {
