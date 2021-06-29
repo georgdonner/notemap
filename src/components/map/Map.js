@@ -221,7 +221,7 @@ const Map = ({ getMarkersRef, maps, singleMap, sidebar, setSidebar }) => {
 
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors; Nominatim API'
-          url="https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {newMarker ? (
           <InstantPopupMarker position={[newMarker.lat, newMarker.lng]}>
