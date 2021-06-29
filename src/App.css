@@ -1,12 +1,8 @@
 .leaflet-container{
   width: calc(100vw - 400px);
-  height: 100vh;
+  height: calc(100vh - 56px);
   display: inline-block;
-}
-@media screen and (max-width: 575px) {
-  .leaflet-container{
-    width: 100vw;
-  }
+  flex: 1;
 }
 .marker-pin {
   width: 30px;

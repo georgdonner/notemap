@@ -27,7 +27,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
   map: "",
 });
 
-const Map = ({ getMarkersRef, maps, singleMap }) => {
+const Map = ({ getMarkersRef, maps, singleMap, sidebar, setSidebar }) => {
   const { GeoPoint } = useFirestore;
   const { data: user } = useUser();
   const online = useOnline();
@@ -204,6 +204,8 @@ const Map = ({ getMarkersRef, maps, singleMap }) => {
         searchIndex={searchIndex}
         centerOnMarker={centerOnMarker}
         map={singleMap}
+        sidebar={sidebar}
+        setSidebar={setSidebar}
       />
       <MapContainer center={[51.341971, 12.37409]} zoom={13}>
         <CenterMap
@@ -219,7 +221,7 @@ const Map = ({ getMarkersRef, maps, singleMap }) => {
 
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors; Nominatim API'
-          url="https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {newMarker ? (
           <InstantPopupMarker position={[newMarker.lat, newMarker.lng]}>

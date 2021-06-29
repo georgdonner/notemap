@@ -2,7 +2,7 @@ import { useFirestore, useUser, useFirestoreCollectionData } from "reactfire";
 
 import Map from "./Map";
 
-const MainMap = () => {
+const MainMap = ({ sidebar, setSidebar }) => {
   const firestore = useFirestore();
   const { data: user } = useUser();
 
@@ -33,6 +33,8 @@ const MainMap = () => {
         getMarkersRef={(mapID) =>
           firestore.collection("maps/" + mapID + "/markers")
         }
+        sidebar={sidebar}
+        setSidebar={setSidebar}
       />
     </>
   ) : (
