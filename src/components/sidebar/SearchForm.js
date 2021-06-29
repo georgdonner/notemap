@@ -15,7 +15,7 @@ const formatAddress = (address) => {
   return str;
 };
 
-const SearchForm = ({ searchIndex, centerOnMarker }) => {
+const SearchForm = ({ searchIndex, centerOnMarker, initialized }) => {
   const [matchedIndexes, setMatchedIndexes] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
   const online = useOnline();
@@ -45,11 +45,11 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
   }
 
   useEffect(() => {
-    if (!online && !searchInputValue) {
+    if (!online && initialized) {
       const all = Object.values(searchIndex.store);
       setMatchedIndexes(all);
     }
-  }, [online, searchIndex, searchInputValue]);
+  }, [online, searchIndex, initialized]);
 
   return (
     <div

@@ -275,7 +275,7 @@ const Map = ({ getMarkersRef, maps, singleMap }) => {
   ) : (
     <div className="container">
       <Description map={singleMap} />
-      <SearchForm searchIndex={searchIndex} />
+      <SearchForm searchIndex={searchIndex} initialized={fetchDone} />
     </div>
   );
 };
