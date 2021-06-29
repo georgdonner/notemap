@@ -1,6 +1,6 @@
 .leaflet-container{
   width: calc(100vw - 400px);
-  height: 100vh;
+  height: calc(100vh - 56px);
   display: inline-block;
   flex: 1;
 }

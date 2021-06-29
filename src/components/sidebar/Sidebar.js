@@ -5,32 +5,28 @@ import useMediaQuery from "@material-ui/core/useMediaQuery";
 
 const Sidebar = ({ searchIndex, centerOnMarker, map, sidebar, setSidebar }) => {
   const mobileView = useMediaQuery("(max-width:567px)");
-  /*useEffect(() => {
-    if (mobileView && sidebar) {
-      setSidebar(!sidebar);
-    }
-  }, [mobileView]);*/
+
   return (
     <div
       style={{
-        height: "100vh",
+        height: "calc(100vh - 56px)",
         width: "400px",
-        boxShadow: "0 0 20px rgba(0, 0, 0, 0.3)",
+        boxShadow: "0 20px 20px rgba(0, 0, 0, 0.3)",
         zIndex: 1000,
       }}
-      className={
-        mobileView
-          ? sidebar
-            ? "flex-column"
-            : "d-none"
-          : sidebar
-          ? "d-none d-sm-flex flex-column"
-          : "d-none"
-      }
-      //className={sidebar ? "d-none d-sm-flex flex-column" : "d-none"}
+      className={sidebar ? "d-flex flex-column" : "d-none"}
     >
+      <div>{sidebar}</div>
       <Description map={map} />
-      <SearchForm searchIndex={searchIndex} centerOnMarker={centerOnMarker} />
+      <SearchForm
+        searchIndex={searchIndex}
+        centerOnMarker={() => {
+          centerOnMarker();
+          if (mobileView) {
+            setSidebar();
+          }
+        }}
+      />
     </div>
   );
 };
