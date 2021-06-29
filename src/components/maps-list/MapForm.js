@@ -2,12 +2,33 @@ import { useState, useEffect } from "react";
 import { CirclePicker } from "react-color";
 import { useHistory, useParams } from "react-router";
 import { useFirestore, useUser } from "reactfire";
+import { Modal, Button } from "react-bootstrap";
 
 const DEFAULT_MAP = {
   name: "",
   description: "",
   color: "",
 };
+
+const DeleteModal = ({ show, onClose, onDelete, map }) => (
+  <Modal show={show} onHide={onClose}>
+    <Modal.Header closeButton>
+      <Modal.Title>Karte löschen</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      Möchtest du wirklich die Karte <b>{map.name}</b> und alle ihre Marker
+      löschen?
+    </Modal.Body>
+    <Modal.Footer>
+      <Button variant="light" onClick={onClose}>
+        Abbrechen
+      </Button>
+      <Button variant="danger" onClick={onDelete}>
+        Löschen
+      </Button>
+    </Modal.Footer>
+  </Modal>
+);
 
 const MapForm = () => {
   const history = useHistory();
@@ -18,6 +39,7 @@ const MapForm = () => {
 
   const [map, setMap] = useState(DEFAULT_MAP);
   const [mapDocLoaded, setMapDocLoaded] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     async function fetchMap() {
@@ -57,9 +79,18 @@ const MapForm = () => {
     history.replace(`/map/${id || added.id}`);
   };
 
+  const deleteMap = async () => {
+    try {
+      await firestore.collection("maps").doc(id).delete();
+      history.replace("/");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="container p-4" style={{ maxWidth: "1000px" }}>
-      <h2 className="mb-4">Neue Karte</h2>
+      <h2 className="mb-4">{id ? "Karte bearbeiten" : "Neue Karte"}</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="name" className="form-label">
@@ -92,10 +123,20 @@ const MapForm = () => {
             onChangeComplete={(color) => setMap({ ...map, color: color.hex })}
           />
         </div>
-        <button type="submit" className="btn btn-primary">
+        <Button className="me-3" variant="primary" type="submit">
           Speichern
-        </button>
+        </Button>
+        <Button variant="danger" onClick={() => setShowDeleteModal(true)}>
+          Löschen
+        </Button>
       </form>
+
+      <DeleteModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDelete={deleteMap}
+        map={map}
+      />
     </div>
   );
 };

@@ -14,6 +14,9 @@ import {
 } from "./LeafletChildren";
 import Sidebar from "../sidebar/Sidebar";
 import useMarkers from "../../hooks/useMarkers";
+import useOnline from "../../hooks/useOnline";
+import SearchForm from "../sidebar/SearchForm";
+import Description from "../sidebar/Description";
 
 const DEFAULT_POPUP_CONTENT = Object.freeze({
   name: "",
@@ -27,6 +30,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
 const Map = ({ getMarkersRef, maps, singleMap, sidebar, setSidebar }) => {
   const { GeoPoint } = useFirestore;
   const { data: user } = useUser();
+  const online = useOnline();
 
   const [inputErrors, setInputErrors] = useState({});
   const [newMarker, setNewMarker] = useState();
@@ -194,7 +198,7 @@ const Map = ({ getMarkersRef, maps, singleMap, sidebar, setSidebar }) => {
     ? maps.length === mapsFetched.length
     : mapsFetched.length === 1;
 
-  return (
+  return online ? (
     <div className="d-flex">
       <Sidebar
         searchIndex={searchIndex}
@@ -216,7 +220,7 @@ const Map = ({ getMarkersRef, maps, singleMap, sidebar, setSidebar }) => {
         {fetchDone ? <FitToBounds markers={markers} /> : null}
 
         <TileLayer
-          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors; Nominatim API'
           url="https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png"
         />
         {newMarker ? (
@@ -269,6 +273,11 @@ const Map = ({ getMarkersRef, maps, singleMap, sidebar, setSidebar }) => {
           </Marker>
         ))}
       </MapContainer>
+    </div>
+  ) : (
+    <div className="container">
+      <Description map={singleMap} />
+      <SearchForm searchIndex={searchIndex} initialized={fetchDone} />
     </div>
   );
 };

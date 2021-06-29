@@ -4,6 +4,7 @@ import tinycolor from "tinycolor2";
 import styled from "styled-components";
 
 import SharedWith from "../common/SharedWith";
+import Footer from "./Footer";
 
 const lightenColor = (hex, amount = 0.99) => {
   const hsl = tinycolor(hex).toHsl();
@@ -98,8 +99,8 @@ const MapList = () => {
               Hauptkarte
             </Link>
             <p className="fs-5 mt-3 mb-0 text-secondary">
-              Hier finden Sie alle Markierungen Ihrer Karten zusammengefasst auf
-              einer Karte
+              Hier findest du alle Markierungen deiner Karten zusammengefasst
+              auf einer Karte
             </p>
             <p className="fs-5 mt-3 mb-0">
               {totalMarkers} Markierung{totalMarkers !== 1 ? "en" : ""} von{" "}
@@ -113,6 +114,7 @@ const MapList = () => {
           <MapCard key={map.id} map={map} owned={map.owner.id === user.uid} />
         ))}
       </div>
+      <Footer />
     </div>
   );
 };

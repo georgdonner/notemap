@@ -1,10 +1,24 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 
 import { categories } from "../../categories";
+import useOnline from "../../hooks/useOnline";
 
-const SearchForm = ({ searchIndex, centerOnMarker }) => {
+const formatAddress = (address) => {
+  let str = `${address.street}, ` || "";
+  if (address.postcode) {
+    str += address.postcode + " ";
+  }
+  if (address.city) {
+    str += address.city;
+  }
+  return str;
+};
+
+const SearchForm = ({ searchIndex, centerOnMarker, initialized }) => {
   const [matchedIndexes, setMatchedIndexes] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
+  const online = useOnline();
 
   function searchInputChange(e) {
     setSearchInputValue(e.target.value);
@@ -30,13 +44,20 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
     }
   }
 
+  useEffect(() => {
+    if (!online && initialized) {
+      const all = Object.values(searchIndex.store);
+      setMatchedIndexes(all);
+    }
+  }, [online, searchIndex, initialized]);
+
   return (
     <div
       id="searchFormContainer"
       style={{ overflowY: "hidden" }}
       className="d-flex flex-column"
     >
-      <div className="p-3 pb-0">
+      <div className="px-3 pt-1">
         <input
           autoComplete="off"
           className="form-control"
@@ -54,14 +75,19 @@ const SearchForm = ({ searchIndex, centerOnMarker }) => {
             key={object.id}
             className="card"
             style={{ width: "100%", cursor: "pointer" }}
-            onClick={() => centerOnMarker(object)}
+            onClick={centerOnMarker ? () => centerOnMarker(object) : () => {}}
           >
             <div className="card-body">
               <h5 className="card-title">{object.name}</h5>
               <h6 className="card-subtitle mb-2 text-muted">
                 {categories.find((ctg) => ctg.key === object.category)?.name}
               </h6>
-              <p className="card-text">{object.description}</p>
+              <div className="card-text">
+                <p>{object.description}</p>
+                {!online && object.address ? (
+                  <p>{formatAddress(object.address)}</p>
+                ) : null}
+              </div>
               <div>
                 {object.tags.map((tag) => (
                   <span
