@@ -81,7 +81,7 @@ const Map = ({ getMarkersRef, maps, singleMap, sidebar, setSidebar }) => {
     if (!currentPopupContent.category) {
       errors.category = true;
     }
-    if (maps && !currentPopupContent.map) {
+    if (!editMode && maps && !currentPopupContent.map) {
       errors.map = true;
     }
 
