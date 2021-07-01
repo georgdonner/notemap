@@ -143,7 +143,6 @@ function MainRouter() {
     </div>
   ) : (
     <Router>
-      <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
       <PushMessaging user={signInCheckResult.user} />
       {firebase.messaging.isSupported() ? (
         <PushMessaging user={signInCheckResult.user} />
@@ -157,18 +156,23 @@ function MainRouter() {
             <SignupForm />
           </PublicRoute>
           <PrivateRoute path="/new-map" isAuthenticated={isAuthenticated}>
+            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
             <MapForm />
           </PrivateRoute>
           <PrivateRoute path="/main-map" isAuthenticated={isAuthenticated}>
+            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
             <MainMap sidebar={sidebar} setSidebar={setSidebar} />
           </PrivateRoute>
           <PrivateRoute path="/map/:id/edit" isAuthenticated={isAuthenticated}>
+            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
             <MapForm />
           </PrivateRoute>
           <PrivateRoute path="/map/:id" isAuthenticated={isAuthenticated}>
+            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
             <SingleMap sidebar={sidebar} setSidebar={setSidebar} />
           </PrivateRoute>
           <PrivateRoute path="/" isAuthenticated={isAuthenticated}>
+            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
             <MapList />
           </PrivateRoute>
         </Switch>

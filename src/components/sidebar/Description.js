@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaCog, FaShareAlt, FaSignOutAlt } from "react-icons/all";
+import { FaCog, FaShareAlt, FaSignOutAlt } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
 import { useFunctions, useUser } from "reactfire";
 
