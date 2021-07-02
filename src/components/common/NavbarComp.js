@@ -1,13 +1,17 @@
 import React, { useContext } from "react";
 import { Button, Navbar, Nav } from "react-bootstrap";
 import { useAuth } from "reactfire";
-import { FaSignOutAlt } from "react-icons/all";
+import { FaSignOutAlt } from "react-icons/fa";
+import { useLocation } from "react-router";
 
 import SidebarContext from "../../context/sidebar";
 
 const NavbarComp = () => {
   const auth = useAuth();
   const { sidebar, setSidebar } = useContext(SidebarContext);
+  const location = useLocation();
+
+  const isMapView = Boolean(location.pathname.match(/(\/map\/\w+|\/main-map)/));
 
   function toggleSidebar() {
     setSidebar(!sidebar);
@@ -25,11 +29,13 @@ const NavbarComp = () => {
         className="ps-3"
       >
         <div className="d-flex">
-          <Navbar.Toggle
-            aria-controls="basic-navbar-nav"
-            onClick={() => toggleSidebar()}
-            className="border-0 px-0 ms-0 me-4"
-          />
+          {isMapView ? (
+            <Navbar.Toggle
+              aria-controls="basic-navbar-nav"
+              onClick={() => toggleSidebar()}
+              className="border-0 px-0 ms-0 me-4"
+            />
+          ) : null}
           <Navbar.Brand href="/">Notemap</Navbar.Brand>
           <Nav>
             <Nav.Link href="/main-map">Hauptkarte</Nav.Link>
