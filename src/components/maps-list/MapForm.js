@@ -106,7 +106,7 @@ const MapForm = () => {
         </div>
         <div className="mb-3">
           <label htmlFor="description" className="form-label">
-            Description
+            Beschreibung
           </label>
           <input
             type="text"
