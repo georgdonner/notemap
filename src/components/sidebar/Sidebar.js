@@ -20,8 +20,8 @@ const Sidebar = ({ searchIndex, centerOnMarker, map, sidebar, setSidebar }) => {
       <Description map={map} />
       <SearchForm
         searchIndex={searchIndex}
-        centerOnMarker={() => {
-          centerOnMarker();
+        centerOnMarker={(object) => {
+          centerOnMarker(object);
           if (mobileView) {
             setSidebar();
           }
