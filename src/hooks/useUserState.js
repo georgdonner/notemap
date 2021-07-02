@@ -8,7 +8,6 @@ function useUserState() {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((authUser) => {
-      console.log(JSON.stringify({ name: authUser?.displayName }));
       setUser(authUser);
       setLoading(false);
     });
