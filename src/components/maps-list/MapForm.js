@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { CirclePicker } from "react-color";
 import { useHistory, useParams } from "react-router";
-import { useFirestore, useUser } from "reactfire";
+import { useFirestore } from "reactfire";
 import { Modal, Button } from "react-bootstrap";
+
+import AuthContext from "../../context/auth";
 
 const DEFAULT_MAP = {
   name: "",
@@ -35,7 +37,7 @@ const MapForm = () => {
   const { id } = useParams();
 
   const firestore = useFirestore();
-  const { data: user } = useUser();
+  const { user } = useContext(AuthContext);
 
   const [map, setMap] = useState(DEFAULT_MAP);
   const [mapDocLoaded, setMapDocLoaded] = useState(false);

@@ -1,12 +1,13 @@
 import { useEffect, useState, useContext } from "react";
 import { FirebaseAppProvider } from "reactfire";
 import { BrowserRouter as Router, Switch } from "react-router-dom";
-import { useSigninCheck, useUser, useFirestore } from "reactfire";
+import { useFirestore } from "reactfire";
 import firebase from "firebase/app";
 
 import { PrivateRoute, PublicRoute } from "../auth/routes";
 import SidebarContext from "../../context/sidebar";
 import AuthContext from "../../context/auth";
+import useUserState from "../../hooks/useUserState";
 
 import PushMessaging from "./PushMessaging";
 import MapList from "../maps-list/MapList";
@@ -64,19 +65,8 @@ function MainRouter() {
   );
 }
 
-function AuthWrapper({ signedIn, children }) {
-  const { data: user } = useUser();
-
-  return (
-    <AuthContext.Provider value={{ signedIn, user }}>
-      {signedIn && !user ? <Loader /> : children}
-    </AuthContext.Provider>
-  );
-}
-
 function Init() {
-  const { status, data: signInCheckResult } = useSigninCheck();
-  const signedIn = signInCheckResult?.signedIn;
+  const userState = useUserState();
 
   const firestore = useFirestore();
 
@@ -94,10 +84,12 @@ function Init() {
     }
   }, [firestore]);
 
-  return (
-    <AuthWrapper signedIn={signedIn}>
-      {status === "loading" ? <Loader /> : <MainRouter />}
-    </AuthWrapper>
+  return userState.loading ? (
+    <Loader />
+  ) : (
+    <AuthContext.Provider value={userState}>
+      <MainRouter />
+    </AuthContext.Provider>
   );
 }
 

@@ -1,11 +1,13 @@
-import { useFirestore, useUser, useFirestoreCollectionData } from "reactfire";
+import { useContext } from "react";
+import { useFirestore, useFirestoreCollectionData } from "reactfire";
 
 import Map from "./Map";
 import Loader from "../common/Loader";
+import AuthContext from "../../context/auth";
 
 const MainMap = () => {
   const firestore = useFirestore();
-  const { data: user } = useUser();
+  const { user } = useContext(AuthContext);
 
   const mapCollection = firestore.collection("maps");
 

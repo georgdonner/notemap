@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { FaCog, FaShareAlt, FaSignOutAlt } from "react-icons/fa";
 import { Link, useHistory } from "react-router-dom";
-import { useFunctions, useUser } from "reactfire";
+import { useFunctions } from "reactfire";
 
 import ShareModal from "./ShareModal";
 import useOnline from "../../hooks/useOnline";
+import AuthContext from "../../context/auth";
 import "./Description.css";
 
 const Description = ({ map }) => {
   const history = useHistory();
-  const { data: user } = useUser();
+  const { user } = useContext(AuthContext);
   const functions = useFunctions();
   const online = useOnline();
 

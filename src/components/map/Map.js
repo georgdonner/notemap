@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { MapContainer, TileLayer, Popup, useMapEvents } from "react-leaflet";
 import "leaflet-geosearch/dist/geosearch.css";
-import { useFirestore, useUser } from "reactfire";
+import { useFirestore } from "reactfire";
 
 import Marker from "./Marker";
 import MarkerForm from "./MarkerForm";
@@ -17,6 +17,7 @@ import useMarkers from "../../hooks/useMarkers";
 import useOnline from "../../hooks/useOnline";
 import SearchForm from "../sidebar/SearchForm";
 import Description from "../sidebar/Description";
+import AuthContext from "../../context/auth";
 
 const DEFAULT_POPUP_CONTENT = Object.freeze({
   name: "",
@@ -29,7 +30,7 @@ const DEFAULT_POPUP_CONTENT = Object.freeze({
 
 const Map = ({ getMarkersRef, maps, singleMap }) => {
   const { GeoPoint } = useFirestore;
-  const { data: user } = useUser();
+  const { user } = useContext(AuthContext);
   const online = useOnline();
 
   const [inputErrors, setInputErrors] = useState({});
