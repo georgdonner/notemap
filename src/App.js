@@ -6,6 +6,7 @@ import { Toast, ToastContainer } from "react-bootstrap";
 import firebase from "firebase/app";
 
 import { PrivateRoute, PublicRoute } from "./components/auth/routes";
+import SidebarContext from "./context/sidebar";
 
 import MapList from "./components/maps-list/MapList";
 import MapForm from "./components/maps-list/MapForm";
@@ -116,7 +117,7 @@ function MainRouter() {
   const { status, data: signInCheckResult } = useSigninCheck();
   const isAuthenticated = signInCheckResult?.signedIn;
 
-  const [sidebar, setSidebar] = useState(true);
+  const [sidebar, setSidebar] = useState(false);
 
   const firestore = useFirestore();
 
@@ -142,42 +143,47 @@ function MainRouter() {
       </div>
     </div>
   ) : (
-    <Router>
-      <PushMessaging user={signInCheckResult.user} />
-      {firebase.messaging.isSupported() ? (
+    <SidebarContext.Provider value={{ sidebar, setSidebar }}>
+      <Router>
         <PushMessaging user={signInCheckResult.user} />
-      ) : null}
-      <div className="App">
-        <Switch>
-          <PublicRoute path="/login" isAuthenticated={isAuthenticated}>
-            <LoginForm />
-          </PublicRoute>
-          <PublicRoute path="/signup" isAuthenticated={isAuthenticated}>
-            <SignupForm />
-          </PublicRoute>
-          <PrivateRoute path="/new-map" isAuthenticated={isAuthenticated}>
-            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
-            <MapForm />
-          </PrivateRoute>
-          <PrivateRoute path="/main-map" isAuthenticated={isAuthenticated}>
-            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
-            <MainMap sidebar={sidebar} setSidebar={setSidebar} />
-          </PrivateRoute>
-          <PrivateRoute path="/map/:id/edit" isAuthenticated={isAuthenticated}>
-            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
-            <MapForm />
-          </PrivateRoute>
-          <PrivateRoute path="/map/:id" isAuthenticated={isAuthenticated}>
-            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
-            <SingleMap sidebar={sidebar} setSidebar={setSidebar} />
-          </PrivateRoute>
-          <PrivateRoute path="/" isAuthenticated={isAuthenticated}>
-            <NavbarComp sidebar={sidebar} setSidebar={setSidebar} />
-            <MapList />
-          </PrivateRoute>
-        </Switch>
-      </div>
-    </Router>
+        {firebase.messaging.isSupported() ? (
+          <PushMessaging user={signInCheckResult.user} />
+        ) : null}
+        <div className="App">
+          <Switch>
+            <PublicRoute path="/login" isAuthenticated={isAuthenticated}>
+              <LoginForm />
+            </PublicRoute>
+            <PublicRoute path="/signup" isAuthenticated={isAuthenticated}>
+              <SignupForm />
+            </PublicRoute>
+            <PrivateRoute path="/new-map" isAuthenticated={isAuthenticated}>
+              <NavbarComp />
+              <MapForm />
+            </PrivateRoute>
+            <PrivateRoute path="/main-map" isAuthenticated={isAuthenticated}>
+              <NavbarComp />
+              <MainMap />
+            </PrivateRoute>
+            <PrivateRoute
+              path="/map/:id/edit"
+              isAuthenticated={isAuthenticated}
+            >
+              <NavbarComp />
+              <MapForm />
+            </PrivateRoute>
+            <PrivateRoute path="/map/:id" isAuthenticated={isAuthenticated}>
+              <NavbarComp />
+              <SingleMap />
+            </PrivateRoute>
+            <PrivateRoute path="/" isAuthenticated={isAuthenticated}>
+              <NavbarComp />
+              <MapList />
+            </PrivateRoute>
+          </Switch>
+        </div>
+      </Router>
+    </SidebarContext.Provider>
   );
 }
 

@@ -1,10 +1,18 @@
-import React from "react";
-import SearchForm from "./SearchForm";
-import Description from "./Description";
+import React, { useEffect, useContext } from "react";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 
-const Sidebar = ({ searchIndex, centerOnMarker, map, sidebar, setSidebar }) => {
+import SidebarContext from "../../context/sidebar";
+import SearchForm from "./SearchForm";
+import Description from "./Description";
+
+const Sidebar = ({ searchIndex, centerOnMarker, map }) => {
   const mobileView = useMediaQuery("(max-width:567px)");
+  const { sidebar, setSidebar } = useContext(SidebarContext);
+
+  useEffect(() => {
+    // Sidebar is open by default on Desktop and closed on Mobile
+    setSidebar(!mobileView);
+  }, [mobileView, setSidebar]);
 
   return (
     <div
@@ -23,7 +31,7 @@ const Sidebar = ({ searchIndex, centerOnMarker, map, sidebar, setSidebar }) => {
         centerOnMarker={(object) => {
           centerOnMarker(object);
           if (mobileView) {
-            setSidebar();
+            setSidebar(false);
           }
         }}
       />

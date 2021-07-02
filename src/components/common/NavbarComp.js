@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Button, Navbar, Nav } from "react-bootstrap";
 import { useAuth } from "reactfire";
 import { FaSignOutAlt } from "react-icons/all";
 
-const NavbarComp = ({ sidebar, setSidebar }) => {
+import SidebarContext from "../../context/sidebar";
+
+const NavbarComp = () => {
   const auth = useAuth();
+  const { sidebar, setSidebar } = useContext(SidebarContext);
 
   function toggleSidebar() {
     setSidebar(!sidebar);
