@@ -16,9 +16,15 @@ const SignupForm = () => {
 
     await auth.createUserWithEmailAndPassword(email, password);
 
-    await functions.httpsCallable("addUserDisplayName")({
-      displayName,
-    });
+    window.sessionStorage.addItem("displayName", displayName);
+
+    functions
+      .httpsCallable("addUserDisplayName")({
+        displayName,
+      })
+      .then(() => {
+        window.sessionStorage.removeItem("displayName");
+      });
   };
 
   return (

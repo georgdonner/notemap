@@ -71,7 +71,8 @@ const MapForm = () => {
         ...map,
         owner: {
           id: user.uid,
-          name: user.displayName,
+          name:
+            user.displayName || window.sessionStorage.getItem("displayName"),
         },
       });
     }
