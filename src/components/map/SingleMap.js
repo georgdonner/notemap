@@ -2,6 +2,7 @@ import { useFirestore, useFirestoreDocData } from "reactfire";
 import { useParams } from "react-router";
 
 import Map from "./Map";
+import Loader from "../common/Loader";
 
 const SingleMap = () => {
   const { id } = useParams();
@@ -19,14 +20,7 @@ const SingleMap = () => {
       <Map singleMap={map} getMarkersRef={() => markersRef} />
     </div>
   ) : (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh" }}
-    >
-      <div className="spinner-border" role="status">
-        <span className="visually-hidden">Loading...</span>
-      </div>
-    </div>
+    <Loader />
   );
 };
 

@@ -1,16 +1,36 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Route, Redirect } from "react-router-dom";
 
-export const PublicRoute = ({ isAuthenticated, children, ...rest }) => (
-  <Route
-    {...rest}
-    render={() => (isAuthenticated ? <Redirect to="/" /> : children)}
-  />
-);
+import AuthContext from "../../context/auth";
+import Navbar from "../common/NavbarComp";
 
-export const PrivateRoute = ({ isAuthenticated, children, ...rest }) => (
-  <Route
-    {...rest}
-    render={() => (isAuthenticated ? children : <Redirect to="/login" />)}
-  />
-);
+export const PublicRoute = ({ component: Component, ...rest }) => {
+  const { signedIn } = useContext(AuthContext);
+
+  return (
+    <Route
+      {...rest}
+      render={() => (signedIn ? <Redirect to="/" /> : <Component />)}
+    />
+  );
+};
+
+export const PrivateRoute = ({ component: Component, ...rest }) => {
+  const { signedIn } = useContext(AuthContext);
+
+  return (
+    <Route
+      {...rest}
+      render={() =>
+        signedIn ? (
+          <>
+            <Navbar />
+            {<Component />}
+          </>
+        ) : (
+          <Redirect to="/login" />
+        )
+      }
+    />
+  );
+};

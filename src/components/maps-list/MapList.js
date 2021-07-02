@@ -1,9 +1,11 @@
-import { useFirestoreCollectionData, useFirestore, useUser } from "reactfire";
+import { useContext } from "react";
+import { useFirestoreCollectionData, useFirestore } from "reactfire";
 import { Link } from "react-router-dom";
 import tinycolor from "tinycolor2";
 import styled from "styled-components";
 
 import SharedWith from "../common/SharedWith";
+import AuthContext from "../../context/auth";
 import Footer from "./Footer";
 
 const lightenColor = (hex, amount = 0.99) => {
@@ -53,7 +55,7 @@ const MapCard = ({ map, owned }) => (
 
 const MapList = () => {
   const firestore = useFirestore();
-  const { data: user } = useUser();
+  const { user } = useContext(AuthContext);
 
   const mapCollection = firestore.collection("maps");
 

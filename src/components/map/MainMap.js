@@ -1,6 +1,7 @@
 import { useFirestore, useUser, useFirestoreCollectionData } from "reactfire";
 
 import Map from "./Map";
+import Loader from "../common/Loader";
 
 const MainMap = () => {
   const firestore = useFirestore();
@@ -36,14 +37,7 @@ const MainMap = () => {
       />
     </>
   ) : (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh" }}
-    >
-      <div className="spinner-border" role="status">
-        <span className="visually-hidden">Loading...</span>
-      </div>
-    </div>
+    <Loader />
   );
 };
 

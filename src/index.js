@@ -5,7 +5,7 @@ import "firebase/firestore";
 import "firebase/messaging";
 
 import "./index.css";
-import App from "./App";
+import App from "./components/app";
 
 ReactDOM.render(
   <React.StrictMode>
