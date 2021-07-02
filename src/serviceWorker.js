@@ -28,7 +28,7 @@ self.addEventListener("activate", (e) => {
 });
 
 const isLocal = (url) => url.origin === self.location.origin;
-const isOSM = (url) => url.origin.match(/openstreetmap.de/);
+const isOSM = (url) => url.origin.match(/openstreetmap.org/);
 
 // Cache all local resources (index.html, bundled CSS & JS) with a network first strategy
 workbox.routing.registerRoute(
