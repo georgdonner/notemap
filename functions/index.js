@@ -327,7 +327,9 @@ async function sendNotification(message, userDoc) {
 
     if (failedTokens.length > 0) {
       return db.doc(`users/${userDoc.id}`).update({
-        messagingTokens: admin.firestore.FieldValue.arrayRemove(failedTokens),
+        messagingTokens: admin.firestore.FieldValue.arrayRemove(
+          ...failedTokens
+        ),
       });
     }
   }
